@@ -1,0 +1,25 @@
+{
+  "name": "MB Production",
+  "short_name": "MB Pro",
+  "description": "MB Production Operations Dashboard",
+  "start_url": "/mbpro/",
+  "scope": "/mbpro/",
+  "display": "standalone",
+  "background_color": "#1e1e1e",
+  "theme_color": "#1D9E75",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
