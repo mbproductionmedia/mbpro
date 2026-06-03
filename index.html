@@ -80,6 +80,8 @@ td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);ver
 tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--bg3)}
 tbody tr.row-complete td{color:var(--text3)}
+tbody tr.row-carriedover td{background:#111827}
+tbody tr.row-carriedover:hover td{background:#1a2030}
 .td-muted{font-size:11px;color:var(--text3);margin-top:2px}
 .badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
 .b-quote{background:#1e1a33;color:#9d8fe8;border:1px solid #3d3360}
@@ -239,6 +241,27 @@ tbody tr.row-complete td{color:var(--text3)}
     <div class="card-title">Select gear</div>
     <div id="gear-panels"></div>
     <div id="no-gear-msg" style="display:none;padding:.5rem 0;font-size:13px;color:var(--text3)">No gear required — editing time only.</div>
+    <!-- Commute manual input -->
+    <div id="commute-section" style="margin-top:.75rem">
+      <div class="cat-label">Other</div>
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3)">
+        <input type="checkbox" id="commute-cb" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent);flex-shrink:0" onchange="updateQ()">
+        <label for="commute-cb" style="margin:0;font-size:12px;color:var(--text);font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;flex:1">Commute</label>
+        <input id="commute-cost" type="number" placeholder="BHD" min="0" step="0.001" inputmode="decimal" style="width:90px;font-size:14px;padding:6px 8px" oninput="updateQ()">
+      </div>
+    </div>
+  </div>
+  <!-- Custom gear manager -->
+  <div class="card">
+    <div class="card-title">My gear — custom items</div>
+    <div id="custom-gear-list"></div>
+    <div class="divider"></div>
+    <div class="form-grid g3">
+      <div><label>Name</label><input type="text" id="cg-name" placeholder="e.g. DJI Drone"></div>
+      <div><label>Category</label><select id="cg-cat"><option>Camera</option><option>Lenses</option><option>Filters</option><option>Lighting</option><option>Modifiers</option><option>Stands</option><option>Audio</option><option>Accessories</option><option>Other</option></select></div>
+      <div><label>Cost (BHD)</label><input type="number" id="cg-cost" placeholder="0.000" min="0" step="0.001" inputmode="decimal"></div>
+    </div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="addCustomGear()">+ Add to my gear</button></div>
   </div>
   <div id="outsource-section" style="display:none">
     <div class="card">
@@ -389,8 +412,7 @@ var GEAR=[
   {cat:'Accessories',name:'DJI RS3 Pro',cost:25,qty:1},
   {cat:'Accessories',name:'Teleprompter',cost:10,qty:1},
   {cat:'Accessories',name:'V-mount battery',cost:5,qty:2},
-  {cat:'Accessories',name:'Reflector',cost:3,qty:1},
-  {cat:'Other',name:'Commute',cost:3,qty:1}
+  {cat:'Accessories',name:'Reflector',cost:3,qty:1}
 ];
 
 var SERVICE_MAP={
@@ -407,7 +429,7 @@ var GEAR_CATS={
 };
 
 var projects=[],payments=[],clients=[],gSel={},outsourceLines=[];
-var fixedExpenses=[],loggedExpenses=[];
+var fixedExpenses=[],loggedExpenses=[],customGear=[];
 var now=new Date();
 var CUR_YEAR=now.getFullYear(),CUR_MONTH=now.getMonth();
 
@@ -610,6 +632,97 @@ function outsourceTotalCost(){
   return outsourceLines.reduce(function(a,l){return a+(l.cost||0);},0);
 }
 
+/* ── COMMUTE ── */
+function commuteCost(){
+  var cb=document.getElementById('commute-cb');
+  var val=parseFloat(document.getElementById('commute-cost').value)||0;
+  return (cb&&cb.checked)?val:0;
+}
+
+/* ── CUSTOM GEAR ── */
+function renderCustomGearList(){
+  var c=document.getElementById('custom-gear-list');
+  if(!customGear.length){
+    c.innerHTML='<p style="font-size:12px;color:var(--text3);margin-bottom:.25rem">No custom gear added yet.</p>';return;
+  }
+  c.innerHTML='<div class="tbl-wrap" style="margin-bottom:.5rem"><table>'
+    +'<thead><tr><th>Name</th><th>Category</th><th>Cost (BHD)</th><th></th></tr></thead><tbody>'
+    +customGear.map(function(g){
+      return'<tr><td style="font-weight:600">'+esc(g.name)+'</td>'
+        +'<td style="color:var(--text3)">'+esc(g.cat)+'</td>'
+        +'<td style="color:var(--accent)">'+fmt(g.cost)+'</td>'
+        +'<td><button class="btn btn-danger" onclick="delCustomGear(\''+g.dbId+'\')">&#10005;</button></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function addCustomGear(){
+  var name=document.getElementById('cg-name').value.trim();
+  var cat=document.getElementById('cg-cat').value;
+  var cost=parseFloat(document.getElementById('cg-cost').value)||0;
+  if(!name){toast('Enter gear name.');return;}
+  if(cost<=0){toast('Enter a valid cost.');return;}
+  syncStatus('loading');
+  sb('POST','custom_gear',{name:name,cat:cat,cost:cost},'')
+    .then(function(rows){
+      var row=rows&&rows[0];
+      customGear.push({dbId:row?row.id:null,name:name,cat:cat,cost:cost});
+      document.getElementById('cg-name').value='';
+      document.getElementById('cg-cost').value='';
+      renderCustomGearList();
+      buildCustomGearChips();
+      syncStatus('ok');toast('Gear added');
+    }).catch(function(e){console.error(e);syncStatus('err');toast('Error \u2014 '+e.message);});
+}
+function delCustomGear(dbId){
+  if(!confirm('Remove this gear item?'))return;
+  syncStatus('loading');
+  sb('DELETE','custom_gear','','id=eq.'+dbId)
+    .then(function(){
+      customGear=customGear.filter(function(g){return g.dbId!=dbId;});
+      renderCustomGearList();
+      buildCustomGearChips();
+      syncStatus('ok');toast('Gear removed');
+    }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
+}
+function buildCustomGearChips(){
+  // Remove any existing custom gear section from gear-panels
+  var panels=document.getElementById('gear-panels');
+  var old=document.getElementById('custom-gear-chips');
+  if(old)old.remove();
+  if(!customGear.length)return;
+  // Group by category and append chips
+  var wrap=document.createElement('div');wrap.id='custom-gear-chips';
+  var cats=[];
+  customGear.forEach(function(g){if(cats.indexOf(g.cat)<0)cats.push(g.cat);});
+  cats.forEach(function(cat){
+    var items=customGear.filter(function(g){return g.cat===cat;});
+    var lbl=document.createElement('div');lbl.className='cat-label';lbl.textContent=cat+' (custom)';wrap.appendChild(lbl);
+    var grid=document.createElement('div');grid.className='gear-grid';
+    items.forEach(function(g){
+      var cid='cgc-'+g.dbId;
+      var chip=document.createElement('div');chip.className='gear-chip';chip.id='chip-'+cid;
+      var cb=document.createElement('input');cb.type='checkbox';cb.id=cid;
+      var nw=document.createElement('div');nw.style.cssText='flex:1;min-width:0';
+      var lb=document.createElement('label');lb.htmlFor=cid;lb.className='gear-chip-name';lb.textContent=g.name;nw.appendChild(lb);
+      var sp=document.createElement('span');sp.className='gear-chip-cost';sp.textContent='BD '+fmt(g.cost);
+      chip.appendChild(cb);chip.appendChild(nw);chip.appendChild(sp);
+      (function(gi,chipEl,cbEl,gid){
+        cbEl.addEventListener('change',function(){
+          if(this.checked){
+            gSel[gid]={cost:gi.cost,name:gi.name,qty:1,unitCost:gi.cost,maxQty:1};
+            chipEl.classList.add('on');
+          } else {
+            delete gSel[gid];chipEl.classList.remove('on');
+          }
+          updateQ();
+        });
+      })(g,chip,cb,cid);
+      grid.appendChild(chip);
+    });
+    wrap.appendChild(grid);
+  });
+  panels.appendChild(wrap);
+}
+
 /* UPDATE 1: Calculate discount amount from inputs */
 function calcDiscount(subtotal){
   var val=parseFloat(document.getElementById('g-discount-val').value)||0;
@@ -630,7 +743,8 @@ function loadAll(){
     sb('GET','payments','','order=created_at.asc'),
     sb('GET','clients','','order=name.asc'),
     sb('GET','fixed_expenses','','order=created_at.asc'),
-    sb('GET','logged_expenses','','order=created_at.asc')
+    sb('GET','logged_expenses','','order=created_at.asc'),
+    sb('GET','custom_gear','','order=created_at.asc')
   ]).then(function(res){
     projects=(res[0]||[]).map(function(p){
       return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -647,7 +761,10 @@ function loadAll(){
     clients=(res[2]||[]).map(function(c){return{name:c.name||'',contact:c.contact||''};});
     fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
     loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
-    refreshAllStatuses();refreshClientList();refreshAllDropdowns();renderAll();
+    customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+    refreshAllStatuses();refreshClientList();refreshAllDropdowns();
+    renderCustomGearList();buildCustomGearChips();
+    renderAll();
     syncStatus('ok');
   }).catch(function(e){console.error('Load:',e);syncStatus('err');toast('Connection error');});
 }
@@ -774,7 +891,8 @@ function updateQ(){
   var gc=Object.keys(gSel).reduce(function(a,k){return a+(gSel[k].cost||0);},0);
   var ec=hours*rate;
   var oc=outsourceTotalCost();
-  var subtotal=gc+ec+oc;
+  var cc=commuteCost();
+  var subtotal=gc+ec+oc+cc;
   var discount=calcDiscount(subtotal);
   var total=subtotal-discount;
 
@@ -800,6 +918,7 @@ function updateQ(){
   var oLines=outsourceLines.filter(function(l){return l.cost>0;}).map(function(l){
     return'<div class="quote-line"><span style="color:var(--text2)">'+(esc(l.name)||'Outsource')+'</span><span style="color:var(--text3)">BHD '+fmt(l.cost)+'</span></div>';
   }).join('');
+  var cLine=cc>0?'<div class="quote-section"><div class="quote-section-label">Other</div><div class="quote-line"><span style="color:var(--text2)">Commute</span><span style="color:var(--text3)">BHD '+fmt(cc)+'</span></div></div>':'';
   var discountLine=discount>0
     ?'<div class="quote-section"><div class="quote-section-label" style="color:#7aa3e8">Discount</div>'
       +'<div class="quote-line"><span style="color:#7aa3e8">'+esc(dtype==='percent'?dval+'%':'')+' Discount</span><span style="color:#7aa3e8">- BHD '+fmt(discount)+'</span></div></div>'
@@ -812,6 +931,7 @@ function updateQ(){
     +'<div class="quote-body">'
     +(gLines?'<div class="quote-section"><div class="quote-section-label">Gear &amp; equipment</div>'+gLines+'</div>':'')
     +(oLines?'<div class="quote-section"><div class="quote-section-label">Outsource services</div>'+oLines+'</div>':'')
+    +cLine
     +'<div class="quote-section"><div class="quote-section-label">Editing &amp; production</div>'
     +'<div class="quote-line"><span style="color:var(--text2)">'+hours+'h \u00d7 BHD '+fmt(rate)+'/hr</span><span style="color:var(--text3)">BHD '+fmt(ec)+'</span></div></div>'
     +discountLine
@@ -825,7 +945,7 @@ function saveQ(){
   var hours=parseFloat(document.getElementById('g-hours').value)||0;
   var rate=parseFloat(document.getElementById('g-rate').value)||5;
   var gc=Object.keys(gSel).reduce(function(a,k){return a+(gSel[k].cost||0);},0);
-  var subtotal=gc+(hours*rate)+outsourceTotalCost();
+  var subtotal=gc+(hours*rate)+outsourceTotalCost()+commuteCost();
   var discount=calcDiscount(subtotal);
   p.quote=Math.round((subtotal-discount)*1000)/1000;
   p.discount=Math.round(discount*1000)/1000;
@@ -924,20 +1044,37 @@ function renderLedger(){
   }
 
   var b=document.getElementById('ledger-body');
-  if(!f.length){b.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-text">No projects this month</div></div></td></tr>';}
-  else{
-    b.innerHTML=f.map(function(p){
-      var paid=projectPaid(p.id);
-      var rem=Math.max(0,(p.quote||0)-paid);
-      var ps=payStatus(paid,p.quote);
-      return'<tr'+(p.status==='Complete'?' class="row-complete"':'')+'>'
-        +'<td><div style="font-weight:700;color:#fff">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+'</td>'
-        +'<td>'+(esc(p.subservice)||esc(p.service))+'</td><td>'+fmtDate(p.date)+'</td>'
-        +'<td><div style="font-weight:700">'+(p.quote?fmt(p.quote):'—')+'</div>'+(p.discount&&p.discount>0?'<div class="td-muted" style="color:#7aa3e8">-BHD '+fmt(p.discount)+' disc.</div>':'')+(p.quote&&rem>0.001?'<div class="td-muted">Rem: '+fmt(rem)+'</div>':'')+'</td>'
-        +'<td><span class="badge '+(p.status==='Quote'?'b-quote':p.status==='Active'?'b-active':'b-complete')+'">'+p.status+'</span></td>'
-        +'<td>'+payPill(ps)+'</td>'
-        +'<td><button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></td></tr>';
-    }).join('');
+  var currentRows=f.map(function(p){
+    var paid=projectPaid(p.id);
+    var rem=Math.max(0,(p.quote||0)-paid);
+    var ps=payStatus(paid,p.quote);
+    return'<tr'+(p.status==='Complete'?' class="row-complete"':'')+'>'
+      +'<td><div style="font-weight:700;color:#fff">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+'</td>'
+      +'<td>'+(esc(p.subservice)||esc(p.service))+'</td><td>'+fmtDate(p.date)+'</td>'
+      +'<td><div style="font-weight:700">'+(p.quote?fmt(p.quote):'—')+'</div>'+(p.discount&&p.discount>0?'<div class="td-muted" style="color:#7aa3e8">-BHD '+fmt(p.discount)+' disc.</div>':'')+(p.quote&&rem>0.001?'<div class="td-muted">Rem: '+fmt(rem)+'</div>':'')+'</td>'
+      +'<td><span class="badge '+(p.status==='Quote'?'b-quote':p.status==='Active'?'b-active':'b-complete')+'">'+p.status+'</span></td>'
+      +'<td>'+payPill(ps)+'</td>'
+      +'<td><button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></td></tr>';
+  });
+  // Carried-over rows appended after current month rows
+  var coRows=coProjects.map(function(p){
+    var paid=projectPaid(p.id);
+    var rem=Math.max(0,(p.quote||0)-paid);
+    var ps=payStatus(paid,p.quote);
+    return'<tr class="row-carriedover">'
+      +'<td><div style="font-weight:700;color:#a8c4f0">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+'<div class="td-muted" style="color:#7aa3e8">Started '+fmtDate(p.date)+'</div></td>'
+      +'<td style="color:#7aa3e8">'+(esc(p.subservice)||esc(p.service))+'</td>'
+      +'<td style="color:#7aa3e8">'+fmtDate(p.date)+'</td>'
+      +'<td><div style="font-weight:700;color:#a8c4f0">'+(p.quote?fmt(p.quote):'—')+'</div>'+(rem>0.001?'<div class="td-muted" style="color:#7aa3e8">Rem: '+fmt(rem)+'</div>':'')+'</td>'
+      +'<td><span class="badge b-carriedover">&#8617; Carried Over</span></td>'
+      +'<td>'+payPill(ps)+'</td>'
+      +'<td><button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></td></tr>';
+  });
+  var allRows=[...currentRows,...coRows];
+  if(!allRows.length){
+    b.innerHTML='<tr><td colspan="7"><div class="empty-state"><div class="empty-text">No projects this month</div></div></td></tr>';
+  } else {
+    b.innerHTML=allRows.join('');
   }
   var active=f.filter(function(p){return p.status==='Active';}).length;
   var quotes=f.filter(function(p){return p.status==='Quote';}).length;
@@ -1211,7 +1348,8 @@ function startAutoRefresh(){
       sb('GET','payments','','order=created_at.asc'),
       sb('GET','clients','','order=name.asc'),
       sb('GET','fixed_expenses','','order=created_at.asc'),
-      sb('GET','logged_expenses','','order=created_at.asc')
+      sb('GET','logged_expenses','','order=created_at.asc'),
+      sb('GET','custom_gear','','order=created_at.asc')
     ]).then(function(res){
       projects=(res[0]||[]).map(function(p){
         return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -1228,7 +1366,10 @@ function startAutoRefresh(){
       clients=(res[2]||[]).map(function(c){return{name:c.name||'',contact:c.contact||''};});
       fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
       loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
-      refreshAllStatuses();refreshClientList();refreshAllDropdowns();renderAll();
+      customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+      refreshAllStatuses();refreshClientList();refreshAllDropdowns();
+      renderCustomGearList();buildCustomGearChips();
+      renderAll();
       syncStatus('ok');
     }).catch(function(){syncStatus('err');});
   },30000);
@@ -1241,6 +1382,7 @@ document.addEventListener('visibilitychange',function(){
 /* ── INIT ── */
 buildGearPanels();
 renderOutsourceLines();
+renderCustomGearList();
 renderFixedExpenses();
 var im=curMo();
 ['ledger-month-sel','income-month-sel','profit-month-sel','cal-month-sel'].forEach(function(id){buildMonthOptions(id,im);});
