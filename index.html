@@ -245,9 +245,8 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
     <div id="commute-section" style="margin-top:.75rem">
       <div class="cat-label">Other</div>
       <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3)">
-        <input type="checkbox" id="commute-cb" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent);flex-shrink:0" onchange="updateQ()">
-        <label for="commute-cb" style="margin:0;font-size:12px;color:var(--text);font-weight:400;letter-spacing:0;text-transform:none;cursor:pointer;flex:1">Commute</label>
-        <input id="commute-cost" type="number" placeholder="BHD" min="0" step="0.001" inputmode="decimal" style="width:90px;font-size:14px;padding:6px 8px" oninput="updateQ()">
+        <label style="margin:0;font-size:12px;color:var(--text);font-weight:400;letter-spacing:0;text-transform:none;flex:1">Commute</label>
+        <input id="commute-cost" type="number" placeholder="BHD — leave 0 to skip" min="0" step="0.001" inputmode="decimal" style="width:160px;font-size:14px;padding:6px 8px" oninput="updateQ()">
       </div>
     </div>
   </div>
@@ -634,9 +633,8 @@ function outsourceTotalCost(){
 
 /* ── COMMUTE ── */
 function commuteCost(){
-  var cb=document.getElementById('commute-cb');
   var val=parseFloat(document.getElementById('commute-cost').value)||0;
-  return (cb&&cb.checked)?val:0;
+  return val>0?val:0;
 }
 
 /* ── CUSTOM GEAR ── */
