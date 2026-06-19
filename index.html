@@ -833,6 +833,7 @@ function loadAll(){
     fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
     refreshAllStatuses();refreshClientList();refreshAllDropdowns();
     renderCustomGearList();buildCustomGearChips();
+    if(document.getElementById('fp-package'))renderFixedPackageOptions();
     renderAll();
     syncStatus('ok');
   }).catch(function(e){console.error('Load:',e);syncStatus('err');toast('Connection error');});
@@ -1620,6 +1621,7 @@ function startAutoRefresh(){
       fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
       refreshAllStatuses();refreshClientList();refreshAllDropdowns();
       renderCustomGearList();buildCustomGearChips();
+      if(document.getElementById('fp-package'))renderFixedPackageOptions();
       renderAll();
       syncStatus('ok');
     }).catch(function(){syncStatus('err');});
