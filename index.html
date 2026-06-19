@@ -71,6 +71,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .btn-primary:hover{background:var(--accent2)}
 .btn-danger{color:var(--red);border-color:transparent;padding:4px 10px;font-size:11px;background:none}
 .btn-danger:hover{background:var(--red-bg)}
+#mode-btn-fixed.mode-active,#mode-btn-custom.mode-active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:.5rem}
 .divider{height:1px;background:var(--border);margin:1rem 0}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius-lg)}
@@ -228,17 +229,70 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
 <!-- GEAR & QUOTE -->
 <div id="tab-gear" class="panel">
   <div class="card">
-    <div class="card-title">Project &amp; edit time</div>
-    <div class="form-grid g2">
+    <div class="card-title">Project</div>
+    <div class="form-grid g1">
       <div><label>Project</label><select id="g-proj" onchange="loadGear()"><option value="">— select —</option></select></div>
-      <div class="form-grid g2" style="margin:0">
-        <div><label>Edit hours</label><input id="g-hours" type="number" value="0" min="0" step="0.5" inputmode="decimal" oninput="updateQ()"></div>
-        <div><label>BHD/hr</label><input id="g-rate" type="number" value="5" min="0" step="0.5" inputmode="decimal" oninput="updateQ()"></div>
+    </div>
+  </div>
+
+  <!-- PRICING MODE TOGGLE -->
+  <div class="card" id="pricing-mode-card" style="display:none">
+    <div class="card-title">Client price</div>
+    <div class="form-grid g2" style="margin-bottom:.75rem">
+      <button type="button" class="btn" id="mode-btn-fixed" onclick="setPricingMode('fixed')" style="width:100%">Fixed Package</button>
+      <button type="button" class="btn" id="mode-btn-custom" onclick="setPricingMode('custom')" style="width:100%">Custom Quote</button>
+    </div>
+
+    <!-- FIXED PACKAGE PANEL -->
+    <div id="fixed-package-panel" style="display:none">
+      <div class="form-grid g2">
+        <div><label>Package</label><select id="fp-package" onchange="onPackageChange()"><option value="">— select —</option></select></div>
+        <div><label>Variant</label><select id="fp-variant" onchange="onPackageVariantChange()"><option value="standard">Standard</option><option value="premium">Premium / Full-day</option></select></div>
+      </div>
+      <div class="form-grid g1">
+        <div><label>Client price (BHD)</label><input id="fp-price" type="number" min="0" step="0.001" inputmode="decimal" oninput="updateQ()"></div>
+      </div>
+      <p class="hint" id="fp-recurring-hint" style="display:none">This package is <strong style="color:var(--accent)">recurring/monthly</strong> — it will renew each month rather than being a one-off charge.</p>
+    </div>
+
+    <!-- CUSTOM QUOTE PANEL -->
+    <div id="custom-quote-panel" style="display:none">
+      <div class="form-grid g1">
+        <div><label>Client price (BHD) — type the value-based price</label><input id="cq-price" type="number" min="0" step="0.001" inputmode="decimal" placeholder="0.000" oninput="updateQ()"></div>
+      </div>
+      <div class="form-grid g2">
+        <div><label>Deliverables (videos/photos)</label><input id="cq-deliverables" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 3" oninput="updateQ()"></div>
+        <div><label>Revisions included</label><input id="cq-revisions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 2" oninput="updateQ()"></div>
+      </div>
+      <div class="form-grid g2">
+        <div><label>Complexity</label><select id="cq-complexity" onchange="updateQ()"><option value="">— select —</option><option>Simple shoot</option><option>Multiple locations</option><option>Motion graphics</option><option>Voiceover / scripted</option><option>Full production (multi-element)</option></select></div>
+        <div><label>Usage type</label><select id="cq-usage" onchange="updateQ()"><option value="">— select —</option><option>Organic social</option><option>Paid ad</option><option>Commercial / broadcast</option></select></div>
+      </div>
+      <div class="form-grid g1">
+        <div><label>Turnaround</label><select id="cq-turnaround" onchange="updateQ()"><option value="">— select —</option><option>Standard</option><option>Rush (premium)</option></select></div>
+      </div>
+      <div class="discount-strip" id="cost-floor-warning" style="display:none;background:var(--red-bg);border-color:#5e2a2a">
+        <div class="discount-strip-label" style="color:var(--red)">⚠ Below cost floor</div>
+        <div class="discount-preview" id="cost-floor-warning-text" style="color:var(--red)"></div>
       </div>
     </div>
   </div>
+
+  <!-- CLIENT QUOTE PREVIEW (fixed/custom modes) -->
+  <div id="client-quote-out"></div>
+
+  <div class="divider" style="margin:1.5rem 0"></div>
+  <p class="hint" style="margin-bottom:.75rem">↓ Everything below is your <strong style="color:var(--text2)">private internal cost tracker</strong>. The client never sees this — it only feeds your Profit tab.</p>
+
   <div class="card">
-    <div class="card-title">Select gear</div>
+    <div class="card-title">Internal cost — edit time</div>
+    <div class="form-grid g2">
+      <div><label>Edit hours</label><input id="g-hours" type="number" value="0" min="0" step="0.5" inputmode="decimal" oninput="updateQ()"></div>
+      <div><label>BHD/hr (internal rate)</label><input id="g-rate" type="number" value="5" min="0" step="0.5" inputmode="decimal" oninput="updateQ()"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Internal cost — select gear</div>
     <div id="gear-panels"></div>
     <div id="no-gear-msg" style="display:none;padding:.5rem 0;font-size:13px;color:var(--text3)">No gear required — editing time only.</div>
     <!-- Commute manual input -->
@@ -264,15 +318,15 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
   </div>
   <div id="outsource-section" style="display:none">
     <div class="card">
-      <div class="card-title">Outsource services</div>
+      <div class="card-title">Internal cost — outsource services</div>
       <div id="outsource-list"></div>
       <div class="btn-row" style="margin-top:.5rem"><button class="btn" onclick="addOutsourceLine()">+ Add outsource</button></div>
     </div>
   </div>
 
-  <!-- UPDATE 1: DISCOUNT SECTION -->
+  <!-- UPDATE 1: DISCOUNT SECTION (legacy / fixed-package use only) -->
   <div class="card" id="discount-card" style="display:none">
-    <div class="card-title">Discount (optional)</div>
+    <div class="card-title">Discount (optional — legacy cost-plus quoting)</div>
     <div class="discount-strip">
       <div class="discount-strip-label">Apply a discount to this quotation</div>
       <div class="discount-row">
@@ -426,6 +480,18 @@ var GEAR_CATS={
   'Product Photography':['Camera','Lenses','Lighting','Modifiers','Stands','Accessories'],
   'General Photography':null
 };
+
+/* New pricing model — maps each sub-service to a suggested pricing mode + default package */
+var SERVICE_PRICING_MODE={
+  'Full Package':{mode:'fixed',package:'Single Promo Video'},
+  'Videography':{mode:'custom'},
+  'Video Edit':{mode:'custom'},
+  'Portraits':{mode:'fixed',package:'Photography Session'},
+  'Food Photography':{mode:'fixed',package:'Photography Session'},
+  'Product Photography':{mode:'fixed',package:'Photography Session'},
+  'General Photography':{mode:'fixed',package:'Photography Session'}
+};
+var fixedPackages=[]; // loaded from Supabase
 
 var projects=[],payments=[],clients=[],gSel={},outsourceLines=[];
 var fixedExpenses=[],loggedExpenses=[],customGear=[];
@@ -595,8 +661,7 @@ function filterGearForSubService(sub){
       }
     }
   }
-  // show discount card whenever a project is selected
-  discountCard.style.display=hasProject?'block':'none';
+  // discount card is legacy-only — no longer auto-shown in the new pricing model
   updateQ();
 }
 
@@ -742,7 +807,8 @@ function loadAll(){
     sb('GET','clients','','order=name.asc'),
     sb('GET','fixed_expenses','','order=created_at.asc'),
     sb('GET','logged_expenses','','order=created_at.asc'),
-    sb('GET','custom_gear','','order=created_at.asc')
+    sb('GET','custom_gear','','order=created_at.asc'),
+    sb('GET','fixed_packages','','order=created_at.asc')
   ]).then(function(res){
     projects=(res[0]||[]).map(function(p){
       return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -751,7 +817,11 @@ function loadAll(){
         status:p.status||'Quote',quote:parseFloat(p.quote)||0,
         discount:parseFloat(p.discount)||0,discountType:p.discount_type||'amount',
         gSel:p.g_sel||{},editHours:parseFloat(p.edit_hours)||0,editRate:parseFloat(p.edit_rate)||5,
-        outsource:p.outsource||[]};
+        outsource:p.outsource||[],commuteCost:parseFloat(p.commute_cost)||0,
+        pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
+        packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
+        valueDeliverables:p.value_deliverables||null,valueComplexity:p.value_complexity||null,
+        valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
     });
     payments=(res[1]||[]).map(function(p){
       return{dbId:p.id,client:p.client||'',mile:p.mile||'',amount:parseFloat(p.amount)||0,date:p.date||'',type:p.type||'Received',projectId:p.project_id||null};
@@ -760,6 +830,7 @@ function loadAll(){
     fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
     loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
     customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+    fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
     refreshAllStatuses();refreshClientList();refreshAllDropdowns();
     renderCustomGearList();buildCustomGearChips();
     renderAll();
@@ -841,6 +912,81 @@ function buildGearPanels(){
   });
 }
 
+/* ── PRICING MODEL (Fixed Package / Custom Quote) ── */
+var currentPricingMode='fixed'; // UI toggle state for the currently open project
+
+function internalCostFloor(){
+  var hours=parseFloat(document.getElementById('g-hours').value)||0;
+  var rate=parseFloat(document.getElementById('g-rate').value)||5;
+  var gc=Object.keys(gSel).reduce(function(a,k){return a+(gSel[k].cost||0);},0);
+  var ec=hours*rate;
+  var oc=outsourceTotalCost();
+  var cc=commuteCost();
+  return gc+ec+oc+cc;
+}
+
+function renderFixedPackageOptions(){
+  var sel=document.getElementById('fp-package');
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— select —</option>';
+  fixedPackages.forEach(function(pkg){
+    var o=document.createElement('option');
+    o.value=pkg.dbId;
+    o.textContent=pkg.name+(pkg.isRecurring?' (recurring)':'');
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+}
+function findPackageByName(name){
+  return fixedPackages.find(function(p){return p.name===name;});
+}
+function onPackageChange(){
+  var pkgId=document.getElementById('fp-package').value;
+  var pkg=fixedPackages.find(function(p){return String(p.dbId)===String(pkgId);});
+  var hint=document.getElementById('fp-recurring-hint');
+  if(!pkg){hint.style.display='none';return;}
+  hint.style.display=pkg.isRecurring?'block':'none';
+  document.getElementById('fp-variant').value='standard';
+  applyPackagePrice(pkg,'standard');
+}
+function onPackageVariantChange(){
+  var pkgId=document.getElementById('fp-package').value;
+  var pkg=fixedPackages.find(function(p){return String(p.dbId)===String(pkgId);});
+  var variant=document.getElementById('fp-variant').value;
+  if(pkg)applyPackagePrice(pkg,variant);
+}
+function applyPackagePrice(pkg,variant){
+  var price=variant==='premium'?(pkg.priceMax||pkg.price):(pkg.priceMin||pkg.price);
+  document.getElementById('fp-price').value=price;
+  updateQ();
+}
+
+function setPricingMode(mode){
+  currentPricingMode=mode;
+  document.getElementById('mode-btn-fixed').classList.toggle('mode-active',mode==='fixed');
+  document.getElementById('mode-btn-custom').classList.toggle('mode-active',mode==='custom');
+  document.getElementById('fixed-package-panel').style.display=mode==='fixed'?'block':'none';
+  document.getElementById('custom-quote-panel').style.display=mode==='custom'?'block':'none';
+  updateQ();
+}
+
+function renderClientQuotePreview(p,clientPrice){
+  var out=document.getElementById('client-quote-out');
+  if(!p){out.innerHTML='';return;}
+  var modeLabel=currentPricingMode==='fixed'?'Fixed Package':'Custom Quote';
+  var pkgId=document.getElementById('fp-package').value;
+  var pkg=fixedPackages.find(function(x){return String(x.dbId)===String(pkgId);});
+  var lineLabel=currentPricingMode==='fixed'?(pkg?pkg.name+(pkg.isRecurring?' (Monthly Retainer)':''):'Select a package'):'Custom Quote';
+  out.innerHTML='<div class="quote-card"><div class="quote-top"><div>'
+    +'<div class="quote-client">'+esc(p.client)+'</div>'
+    +'<div class="quote-meta">'+(esc(p.subservice)||esc(p.service))+' &nbsp;\u00b7&nbsp; '+fmtDate(p.date)+(p.contact?' &nbsp;\u00b7&nbsp; '+esc(p.contact):'')+'</div>'
+    +(p.desc?'<div class="quote-meta" style="font-style:italic;margin-top:4px">'+esc(p.desc)+'</div>':'')
+    +'</div><span class="badge b-quote">'+modeLabel+'</span></div>'
+    +'<div class="quote-body">'
+    +'<div class="quote-line"><span style="color:var(--text2)">'+esc(lineLabel)+'</span><span style="color:var(--text3)"></span></div>'
+    +'</div><div class="quote-total-row"><span class="quote-total-label">Client Price</span><span class="quote-total-amt">BHD '+fmt(clientPrice)+'</span></div></div>';
+}
+
 function loadGear(){
   var id=parseInt(document.getElementById('g-proj').value,10);
   var p=projects.find(function(x){return x.id===id;});
@@ -853,14 +999,23 @@ function loadGear(){
   // reset discount
   document.getElementById('g-discount-val').value='0';
   document.getElementById('g-discount-type').value='amount';
-  document.getElementById('discount-card').style.display=p?'block':'none';
+  document.getElementById('discount-card').style.display='none';
+  document.getElementById('commute-cost').value='';
 
-  if(!p){outsourceLines=[];renderOutsourceLines();filterGearForSubService('');updateQ();return;}
+  var pricingModeCard=document.getElementById('pricing-mode-card');
+  if(!p){
+    outsourceLines=[];renderOutsourceLines();filterGearForSubService('');
+    pricingModeCard.style.display='none';
+    document.getElementById('client-quote-out').innerHTML='';
+    updateQ();return;
+  }
+  pricingModeCard.style.display='block';
   outsourceLines=p.outsource?JSON.parse(JSON.stringify(p.outsource)):[];
   renderOutsourceLines();
   document.getElementById('g-hours').value=p.editHours||0;
   document.getElementById('g-rate').value=p.editRate||5;
-  // restore saved discount if any
+  if(p.commuteCost)document.getElementById('commute-cost').value=p.commuteCost;
+  // restore saved discount if any (legacy mode only)
   if(p.discount&&p.discount>0){
     document.getElementById('g-discount-val').value=p.discount;
     document.getElementById('g-discount-type').value=p.discountType||'amount';
@@ -879,6 +1034,32 @@ function loadGear(){
     }
   });
   filterGearForSubService(p.subservice||'');
+
+  // Determine pricing mode: saved mode wins; otherwise suggest from sub-service map
+  renderFixedPackageOptions();
+  var savedMode=p.pricingMode;
+  var suggestion=SERVICE_PRICING_MODE[p.subservice]||{mode:'custom'};
+  var modeToUse=(savedMode==='fixed'||savedMode==='custom')?savedMode:suggestion.mode;
+
+  if(modeToUse==='fixed'){
+    var pkg=p.packageName?findPackageByName(p.packageName):(suggestion.package?findPackageByName(suggestion.package):null);
+    if(pkg){
+      document.getElementById('fp-package').value=pkg.dbId;
+      document.getElementById('fp-variant').value=p.packageVariant||'standard';
+      var hint=document.getElementById('fp-recurring-hint');
+      hint.style.display=pkg.isRecurring?'block':'none';
+      if(p.customPrice){document.getElementById('fp-price').value=p.customPrice;}
+      else{applyPackagePrice(pkg,p.packageVariant||'standard');}
+    }
+  } else {
+    document.getElementById('cq-price').value=p.customPrice||'';
+    document.getElementById('cq-deliverables').value=p.valueDeliverables||'';
+    document.getElementById('cq-complexity').value=p.valueComplexity||'';
+    document.getElementById('cq-usage').value=p.valueUsage||'';
+    document.getElementById('cq-turnaround').value=p.valueTurnaround||'';
+    document.getElementById('cq-revisions').value=p.valueRevisions||'';
+  }
+  setPricingMode(modeToUse);
 }
 
 function updateQ(){
@@ -907,7 +1088,7 @@ function updateQ(){
   }
 
   var out=document.getElementById('quote-out');
-  if(!p){out.innerHTML='';return;}
+  if(!p){out.innerHTML='';renderClientQuotePreview(null,0);return;}
   var gLines=Object.keys(gSel).map(function(k){
     var item=gSel[k];
     var lbl=esc(item.name)+(item.qty&&item.qty>1?' \u00d7'+item.qty:'');
@@ -922,10 +1103,10 @@ function updateQ(){
       +'<div class="quote-line"><span style="color:#7aa3e8">'+esc(dtype==='percent'?dval+'%':'')+' Discount</span><span style="color:#7aa3e8">- BHD '+fmt(discount)+'</span></div></div>'
     :'';
   out.innerHTML='<div class="quote-card"><div class="quote-top"><div>'
-    +'<div class="quote-client">'+esc(p.client)+'</div>'
+    +'<div class="quote-client">'+esc(p.client)+' <span style="color:var(--text3);font-size:11px;font-weight:400">(internal cost)</span></div>'
     +'<div class="quote-meta">'+(esc(p.subservice)||esc(p.service))+' &nbsp;\u00b7&nbsp; '+fmtDate(p.date)+(p.contact?' &nbsp;\u00b7&nbsp; '+esc(p.contact):'')+'</div>'
     +(p.desc?'<div class="quote-meta" style="font-style:italic;margin-top:4px">'+esc(p.desc)+'</div>':'')
-    +'</div><span class="badge b-quote">Quote</span></div>'
+    +'</div><span class="badge b-quote">Cost Floor</span></div>'
     +'<div class="quote-body">'
     +(gLines?'<div class="quote-section"><div class="quote-section-label">Gear &amp; equipment</div>'+gLines+'</div>':'')
     +(oLines?'<div class="quote-section"><div class="quote-section-label">Outsource services</div>'+oLines+'</div>':'')
@@ -933,7 +1114,26 @@ function updateQ(){
     +'<div class="quote-section"><div class="quote-section-label">Editing &amp; production</div>'
     +'<div class="quote-line"><span style="color:var(--text2)">'+hours+'h \u00d7 BHD '+fmt(rate)+'/hr</span><span style="color:var(--text3)">BHD '+fmt(ec)+'</span></div></div>'
     +discountLine
-    +'</div><div class="quote-total-row"><span class="quote-total-label">Total'+(discount>0?' (after discount)':'')+'</span><span class="quote-total-amt">BHD '+fmt(total)+'</span></div></div>';
+    +'</div><div class="quote-total-row"><span class="quote-total-label">Internal Cost'+(discount>0?' (after discount)':'')+'</span><span class="quote-total-amt">BHD '+fmt(total)+'</span></div></div>';
+
+  // ── Client-facing price + cost floor warning ──
+  var costFloor=internalCostFloor();
+  var clientPrice=0;
+  if(currentPricingMode==='fixed'){
+    clientPrice=parseFloat(document.getElementById('fp-price').value)||0;
+  } else {
+    clientPrice=parseFloat(document.getElementById('cq-price').value)||0;
+  }
+  renderClientQuotePreview(p,clientPrice);
+
+  var warnBox=document.getElementById('cost-floor-warning');
+  var warnText=document.getElementById('cost-floor-warning-text');
+  if(currentPricingMode==='custom'&&clientPrice>0&&clientPrice<costFloor-0.001){
+    warnBox.style.display='block';
+    warnText.innerHTML='Your typed price <strong>BHD '+fmt(clientPrice)+'</strong> is below your internal cost floor of <strong>BHD '+fmt(costFloor)+'</strong>. This job would run at a loss.';
+  } else if(warnBox){
+    warnBox.style.display='none';
+  }
 }
 
 function saveQ(){
@@ -942,22 +1142,65 @@ function saveQ(){
   if(!p){toast('Select a project first.');return;}
   var hours=parseFloat(document.getElementById('g-hours').value)||0;
   var rate=parseFloat(document.getElementById('g-rate').value)||5;
+  var commute=commuteCost();
   var gc=Object.keys(gSel).reduce(function(a,k){return a+(gSel[k].cost||0);},0);
-  var subtotal=gc+(hours*rate)+outsourceTotalCost()+commuteCost();
-  var discount=calcDiscount(subtotal);
-  p.quote=Math.round((subtotal-discount)*1000)/1000;
+  var internalCost=gc+(hours*rate)+outsourceTotalCost()+commute;
+  var discount=calcDiscount(internalCost);
+
+  // ── Determine client price from the active pricing mode ──
+  var clientPrice=0,packageId=null,packageName=null,packageVariant=null,customPrice=null;
+  var valDeliv=null,valComplex=null,valUsage=null,valTurn=null,valRevis=null;
+
+  if(currentPricingMode==='fixed'){
+    var pkgId=document.getElementById('fp-package').value;
+    var pkg=fixedPackages.find(function(x){return String(x.dbId)===String(pkgId);});
+    if(!pkg){toast('Select a package first.');return;}
+    clientPrice=parseFloat(document.getElementById('fp-price').value)||0;
+    packageId=pkg.dbId;packageName=pkg.name;packageVariant=document.getElementById('fp-variant').value;
+  } else {
+    clientPrice=parseFloat(document.getElementById('cq-price').value)||0;
+    if(clientPrice<=0){toast('Enter a client price for this custom quote.');return;}
+    customPrice=clientPrice;
+    valDeliv=parseInt(document.getElementById('cq-deliverables').value,10)||null;
+    valComplex=document.getElementById('cq-complexity').value||null;
+    valUsage=document.getElementById('cq-usage').value||null;
+    valTurn=document.getElementById('cq-turnaround').value||null;
+    valRevis=parseInt(document.getElementById('cq-revisions').value,10)||null;
+  }
+
+  // Update in-memory project object
+  p.quote=Math.round(clientPrice*1000)/1000; // client-facing price drives ledger/income/profit everywhere else
   p.discount=Math.round(discount*1000)/1000;
   p.discountType=document.getElementById('g-discount-type').value;
   p.gSel=JSON.parse(JSON.stringify(gSel));
   p.editHours=hours;p.editRate=rate;
   p.outsource=JSON.parse(JSON.stringify(outsourceLines));
+  p.commuteCost=commute;
+  p.pricingMode=currentPricingMode;
+  p.packageId=packageId;p.packageName=packageName;p.packageVariant=packageVariant;
+  p.customPrice=customPrice;
+  p.valueDeliverables=valDeliv;p.valueComplexity=valComplex;p.valueUsage=valUsage;
+  p.valueTurnaround=valTurn;p.valueRevisions=valRevis;
+  p.internalCost=Math.round(internalCost*1000)/1000;
+
   syncStatus('loading');
-  sb('PATCH','projects',{quote:p.quote,discount:p.discount,discount_type:p.discountType,g_sel:p.gSel,edit_hours:hours,edit_rate:rate,outsource:p.outsource},'id=eq.'+p.id)
+  sb('PATCH','projects',{
+    quote:p.quote,discount:p.discount,discount_type:p.discountType,g_sel:p.gSel,
+    edit_hours:hours,edit_rate:rate,outsource:p.outsource,commute_cost:commute,
+    pricing_mode:currentPricingMode,package_id:packageId,package_name:packageName,package_variant:packageVariant,
+    custom_price:customPrice,value_deliverables:valDeliv,value_complexity:valComplex,
+    value_usage:valUsage,value_turnaround:valTurn,value_revisions:valRevis
+  },'id=eq.'+p.id)
     .then(function(){
       refreshAllStatuses();
       populateIncomeSel(); // refresh income selector after quote changes
       renderLedger();syncStatus('ok');
-      toast('Quotation saved \u2014 BHD '+fmt(p.quote)+(discount>0?' (incl. BHD '+fmt(discount)+' discount)':''));
+      var costFloor=internalCost;
+      if(currentPricingMode==='custom'&&clientPrice<costFloor-0.001){
+        toast('Saved \u2014 BHD '+fmt(p.quote)+' (below cost floor of BHD '+fmt(costFloor)+'!)');
+      } else {
+        toast('Quotation saved \u2014 BHD '+fmt(p.quote));
+      }
     })
     .catch(function(e){console.error(e);syncStatus('err');toast('Save failed');});
 }
@@ -974,10 +1217,14 @@ function startProject(){
   var p={id:Date.now(),client:client,contact:contact,service:service,subservice:subservice,
     date:document.getElementById('n-date').value||today(),
     desc:document.getElementById('n-desc').value.trim(),
-    status:'Quote',quote:0,discount:0,gSel:{},editHours:0,editRate:5,outsource:[]};
+    status:'Quote',quote:0,discount:0,gSel:{},editHours:0,editRate:5,outsource:[],
+    pricingMode:null,packageId:null,packageName:null,packageVariant:null,customPrice:null,
+    valueDeliverables:null,valueComplexity:null,valueUsage:null,valueTurnaround:null,valueRevisions:null,
+    commuteCost:0};
   syncStatus('loading');
   sb('POST','projects',{id:p.id,client:p.client,contact:p.contact,service:p.service,subservice:p.subservice,
-    date:p.date,description:p.desc,status:'Quote',quote:0,discount:0,g_sel:{},edit_hours:0,edit_rate:5,outsource:[]},'')
+    date:p.date,description:p.desc,status:'Quote',quote:0,discount:0,g_sel:{},edit_hours:0,edit_rate:5,outsource:[],
+    commute_cost:0},'')
     .then(function(){
       var ex=clients.find(function(c){return c.name.toLowerCase()===client.toLowerCase();});
       return ex
@@ -1347,7 +1594,8 @@ function startAutoRefresh(){
       sb('GET','clients','','order=name.asc'),
       sb('GET','fixed_expenses','','order=created_at.asc'),
       sb('GET','logged_expenses','','order=created_at.asc'),
-      sb('GET','custom_gear','','order=created_at.asc')
+      sb('GET','custom_gear','','order=created_at.asc'),
+      sb('GET','fixed_packages','','order=created_at.asc')
     ]).then(function(res){
       projects=(res[0]||[]).map(function(p){
         return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -1356,7 +1604,11 @@ function startAutoRefresh(){
           status:p.status||'Quote',quote:parseFloat(p.quote)||0,
           discount:parseFloat(p.discount)||0,discountType:p.discount_type||'amount',
           gSel:p.g_sel||{},editHours:parseFloat(p.edit_hours)||0,editRate:parseFloat(p.edit_rate)||5,
-          outsource:p.outsource||[]};
+          outsource:p.outsource||[],commuteCost:parseFloat(p.commute_cost)||0,
+          pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
+          packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
+          valueDeliverables:p.value_deliverables||null,valueComplexity:p.value_complexity||null,
+          valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
       });
       payments=(res[1]||[]).map(function(p){
         return{dbId:p.id,client:p.client||'',mile:p.mile||'',amount:parseFloat(p.amount)||0,date:p.date||'',type:p.type||'Received',projectId:p.project_id||null};
@@ -1365,6 +1617,7 @@ function startAutoRefresh(){
       fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
       loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
       customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+      fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
       refreshAllStatuses();refreshClientList();refreshAllDropdowns();
       renderCustomGearList();buildCustomGearChips();
       renderAll();
