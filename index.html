@@ -260,8 +260,9 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
       <div class="form-grid g1">
         <div><label>Client price (BHD) — type the value-based price</label><input id="cq-price" type="number" min="0" step="0.001" inputmode="decimal" placeholder="0.000" oninput="updateQ()"></div>
       </div>
-      <div class="form-grid g2">
-        <div><label>Deliverables (videos/photos)</label><input id="cq-deliverables" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 3" oninput="updateQ()"></div>
+      <div class="form-grid g3">
+        <div><label>Photos (deliverables)</label><input id="cq-photos" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 10" oninput="updateQ()"></div>
+        <div><label>Videos (deliverables)</label><input id="cq-videos" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 1" oninput="updateQ()"></div>
         <div><label>Revisions included</label><input id="cq-revisions" type="number" min="0" step="1" inputmode="numeric" placeholder="e.g. 2" oninput="updateQ()"></div>
       </div>
       <div class="form-grid g2">
@@ -820,7 +821,7 @@ function loadAll(){
         outsource:p.outsource||[],commuteCost:parseFloat(p.commute_cost)||0,
         pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
         packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
-        valueDeliverables:p.value_deliverables||null,valueComplexity:p.value_complexity||null,
+        valuePhotos:p.value_photos||null,valueVideos:p.value_videos||null,valueComplexity:p.value_complexity||null,
         valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
     });
     payments=(res[1]||[]).map(function(p){
@@ -1054,7 +1055,8 @@ function loadGear(){
     }
   } else {
     document.getElementById('cq-price').value=p.customPrice||'';
-    document.getElementById('cq-deliverables').value=p.valueDeliverables||'';
+    document.getElementById('cq-photos').value=p.valuePhotos||'';
+    document.getElementById('cq-videos').value=p.valueVideos||'';
     document.getElementById('cq-complexity').value=p.valueComplexity||'';
     document.getElementById('cq-usage').value=p.valueUsage||'';
     document.getElementById('cq-turnaround').value=p.valueTurnaround||'';
@@ -1150,7 +1152,7 @@ function saveQ(){
 
   // ── Determine client price from the active pricing mode ──
   var clientPrice=0,packageId=null,packageName=null,packageVariant=null,customPrice=null;
-  var valDeliv=null,valComplex=null,valUsage=null,valTurn=null,valRevis=null;
+  var valPhotos=null,valVideos=null,valComplex=null,valUsage=null,valTurn=null,valRevis=null;
 
   if(currentPricingMode==='fixed'){
     var pkgId=document.getElementById('fp-package').value;
@@ -1162,7 +1164,8 @@ function saveQ(){
     clientPrice=parseFloat(document.getElementById('cq-price').value)||0;
     if(clientPrice<=0){toast('Enter a client price for this custom quote.');return;}
     customPrice=clientPrice;
-    valDeliv=parseInt(document.getElementById('cq-deliverables').value,10)||null;
+    valPhotos=parseInt(document.getElementById('cq-photos').value,10)||null;
+    valVideos=parseInt(document.getElementById('cq-videos').value,10)||null;
     valComplex=document.getElementById('cq-complexity').value||null;
     valUsage=document.getElementById('cq-usage').value||null;
     valTurn=document.getElementById('cq-turnaround').value||null;
@@ -1180,7 +1183,7 @@ function saveQ(){
   p.pricingMode=currentPricingMode;
   p.packageId=packageId;p.packageName=packageName;p.packageVariant=packageVariant;
   p.customPrice=customPrice;
-  p.valueDeliverables=valDeliv;p.valueComplexity=valComplex;p.valueUsage=valUsage;
+  p.valuePhotos=valPhotos;p.valueVideos=valVideos;p.valueComplexity=valComplex;p.valueUsage=valUsage;
   p.valueTurnaround=valTurn;p.valueRevisions=valRevis;
   p.internalCost=Math.round(internalCost*1000)/1000;
 
@@ -1189,7 +1192,7 @@ function saveQ(){
     quote:p.quote,discount:p.discount,discount_type:p.discountType,g_sel:p.gSel,
     edit_hours:hours,edit_rate:rate,outsource:p.outsource,commute_cost:commute,
     pricing_mode:currentPricingMode,package_id:packageId,package_name:packageName,package_variant:packageVariant,
-    custom_price:customPrice,value_deliverables:valDeliv,value_complexity:valComplex,
+    custom_price:customPrice,value_photos:valPhotos,value_videos:valVideos,value_complexity:valComplex,
     value_usage:valUsage,value_turnaround:valTurn,value_revisions:valRevis
   },'id=eq.'+p.id)
     .then(function(){
@@ -1220,7 +1223,7 @@ function startProject(){
     desc:document.getElementById('n-desc').value.trim(),
     status:'Quote',quote:0,discount:0,gSel:{},editHours:0,editRate:5,outsource:[],
     pricingMode:null,packageId:null,packageName:null,packageVariant:null,customPrice:null,
-    valueDeliverables:null,valueComplexity:null,valueUsage:null,valueTurnaround:null,valueRevisions:null,
+    valuePhotos:null,valueVideos:null,valueComplexity:null,valueUsage:null,valueTurnaround:null,valueRevisions:null,
     commuteCost:0};
   syncStatus('loading');
   sb('POST','projects',{id:p.id,client:p.client,contact:p.contact,service:p.service,subservice:p.subservice,
@@ -1608,7 +1611,7 @@ function startAutoRefresh(){
           outsource:p.outsource||[],commuteCost:parseFloat(p.commute_cost)||0,
           pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
           packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
-          valueDeliverables:p.value_deliverables||null,valueComplexity:p.value_complexity||null,
+          valuePhotos:p.value_photos||null,valueVideos:p.value_videos||null,valueComplexity:p.value_complexity||null,
           valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
       });
       payments=(res[1]||[]).map(function(p){
