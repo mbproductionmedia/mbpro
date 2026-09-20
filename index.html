@@ -91,6 +91,64 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .royalty-client-row input[type=checkbox]{width:15px;height:15px;accent-color:#d4af4a;flex-shrink:0}
 .royalty-client-name{font-size:13px;color:var(--text);flex:1}
 @media(max-width:640px){.royalty-opts{grid-template-columns:1fr}}
+
+/* ── MODAL ── */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:900;padding:16px;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.modal-overlay.open{display:flex;align-items:flex-start;justify-content:center}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);width:100%;max-width:560px;margin:auto;padding-top:env(safe-area-inset-top,0px)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.15rem;border-bottom:1px solid var(--border)}
+.modal-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)}
+.modal-x{background:none;border:none;color:var(--text3);font-size:16px;cursor:pointer;padding:4px 8px;line-height:1}
+.modal-x:hover{color:var(--text)}
+.modal-body{padding:1.15rem}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.15rem;border-top:1px solid var(--border)}
+.btn-edit{color:var(--accent);border-color:transparent;padding:4px 10px;font-size:11px;background:none}
+.btn-edit:hover{background:var(--accent-lo)}
+.row-actions{display:flex;gap:2px;align-items:center}
+.desc-note{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic;line-height:1.5}
+
+/* ── INVOICE BUILDER ── */
+.inv-line{border:1px solid var(--border);border-radius:var(--radius);padding:.85rem;margin-bottom:10px;background:var(--bg3)}
+.inv-line-head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.inv-line-num{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent);flex:1}
+.inv-total-line{display:flex;justify-content:space-between;font-size:13px;padding:6px 0}
+.inv-total-line.grand{border-top:1px solid var(--border);margin-top:6px;padding-top:10px;font-size:16px;font-weight:700;color:var(--accent)}
+
+/* ── PRINTABLE INVOICE ── */
+#print-area{display:none}
+.inv-doc{background:#fff;color:#1a1a1a;padding:38px 40px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
+.inv-doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
+.inv-brand{font-size:26px;font-weight:800;line-height:1.15;letter-spacing:-.01em}
+.inv-to-label{font-size:21px;font-weight:400;margin-top:22px}
+.inv-to-name{font-size:27px;font-weight:800;line-height:1.15;margin-top:2px}
+.inv-logo{width:110px;height:110px;flex-shrink:0}
+.inv-meta{margin-top:20px;font-size:12px;line-height:1.9}
+.inv-meta-row{display:flex;gap:28px}
+.inv-meta-key{width:64px;color:#555}
+.inv-tbl{width:100%;border-collapse:collapse;margin-top:26px;font-size:12px}
+.inv-tbl th{background:#3a3a3a;color:#fff;text-align:left;padding:11px 12px;font-weight:600;font-size:11.5px;letter-spacing:.02em}
+.inv-tbl th.num,.inv-tbl td.num{text-align:center;width:62px}
+.inv-tbl th.money,.inv-tbl td.money{text-align:right;width:92px}
+.inv-tbl td{padding:13px 12px;vertical-align:top;border-bottom:1px solid #e2e2e2}
+.inv-item-title{font-weight:700;font-size:12.5px;margin-bottom:4px}
+.inv-item-sub{color:#4a4a4a;font-size:11.5px;line-height:1.65}
+.inv-row-discount td{background:#f4f4f4;font-size:12.5px}
+.inv-row-total td{background:#ebebeb;font-size:14px;font-weight:700;padding:14px 12px}
+.inv-terms{margin-top:34px;display:flex;justify-content:space-between;gap:36px;align-items:flex-start}
+.inv-terms-title{font-size:14px;font-weight:700;margin-bottom:9px}
+.inv-terms-body{font-size:11px;line-height:1.75;color:#333;white-space:pre-line;max-width:60%}
+.inv-sign{text-align:center;flex-shrink:0}
+.inv-sign-line{font-family:'Snell Roundhand','Brush Script MT',cursive;font-size:27px;border-bottom:1px solid #1a1a1a;padding:0 22px 2px;margin-bottom:6px}
+.inv-sign-name{font-size:12px;font-weight:700}
+.inv-sign-role{font-size:10.5px;color:#555}
+
+@media print{
+  @page{size:A4;margin:0}
+  body>.wrap,.toast,.modal-overlay{display:none !important}
+  html,body{background:#fff !important;padding:0 !important;margin:0 !important}
+  #print-area{display:block !important}
+  .inv-doc{padding:26mm 18mm}
+}
 .hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:.5rem}
 .divider{height:1px;background:var(--border);margin:1rem 0}
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius-lg)}
@@ -221,6 +279,7 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
   <button class="nav-btn active" onclick="go('new')">New</button>
   <button class="nav-btn" onclick="go('gear')">Gear</button>
   <button class="nav-btn" onclick="go('ledger')">Ledger</button>
+  <button class="nav-btn" onclick="go('invoice')">Invoice</button>
   <button class="nav-btn" onclick="go('income')">Income</button>
   <button class="nav-btn" onclick="go('profit')">Profit</button>
   <button class="nav-btn" onclick="go('calendar')">Calendar</button>
@@ -411,9 +470,58 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
   <div id="carried-over-banner"></div>
   <div class="metrics" id="ledger-stats"></div>
   <div class="tbl-wrap"><table>
-    <thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Quote (BHD)</th><th>Project</th><th>Payment</th><th></th></tr></thead>
+    <thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Quote (BHD)</th><th>Project</th><th>Payment</th><th>Actions</th></tr></thead>
     <tbody id="ledger-body"></tbody>
   </table></div>
+</div>
+
+<!-- INVOICE -->
+<div id="tab-invoice" class="panel">
+  <div class="card">
+    <div class="card-title">Build an invoice</div>
+    <div class="form-grid g2">
+      <div><label>From project</label><select id="inv-proj" onchange="onInvoiceProjectChange()"><option value="">— select —</option></select></div>
+      <div><label>Invoice date</label><input id="inv-date" type="date" oninput="renderInvoicePreview()"></div>
+    </div>
+    <div class="form-grid g2">
+      <div><label>Invoice #</label><input id="inv-no" type="number" min="1" step="1" inputmode="numeric" oninput="renderInvoicePreview()"></div>
+      <div><label>Invoice to (billing name)</label><input id="inv-client" type="text" placeholder="e.g. Adel Khalaf Holding" oninput="renderInvoicePreview()"></div>
+    </div>
+    <p class="hint">Invoice # auto-continues from your last one. The billing name can differ from the project's client name.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Line items</div>
+    <div id="inv-lines"></div>
+    <div class="btn-row" style="margin-top:.5rem"><button class="btn" onclick="addInvLine()">+ Add line item</button></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Discount</div>
+    <div class="form-grid g2">
+      <div><label>Qty</label><input id="inv-disc-qty" type="number" min="0" step="1" inputmode="numeric" value="0" oninput="renderInvoicePreview()"></div>
+      <div><label>Rate per unit (BHD)</label><input id="inv-disc-rate" type="number" min="0" step="0.001" inputmode="decimal" value="0" oninput="renderInvoicePreview()"></div>
+    </div>
+    <p class="hint">Leave both at 0 for no discount row.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">Terms &amp; conditions</div>
+    <textarea id="inv-terms" rows="6" oninput="renderInvoicePreview()"></textarea>
+    <div class="btn-row"><button class="btn" onclick="resetInvTerms()">Reset to default terms</button></div>
+  </div>
+
+  <div id="inv-preview-wrap"></div>
+
+  <div class="btn-row" style="margin-top:1rem">
+    <button class="btn btn-primary" onclick="printInvoice()">Save / share as PDF</button>
+    <button class="btn" onclick="saveInvoice()">Save invoice</button>
+  </div>
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">Saved invoices</div>
+    <div id="inv-history"></div>
+  </div>
 </div>
 
 <!-- INCOME -->
@@ -493,6 +601,40 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
 </div>
 
 </div>
+<!-- EDIT PROJECT MODAL -->
+<div class="modal-overlay" id="edit-modal" onclick="if(event.target===this)closeEditProj()">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title">Edit project</span>
+      <button class="modal-x" onclick="closeEditProj()">&#10005;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid g2">
+        <div><label>Client name</label><input id="e-client" type="text"></div>
+        <div><label>Contact</label><input id="e-contact" type="text"></div>
+      </div>
+      <div class="form-grid g2">
+        <div><label>Service</label><select id="e-service" onchange="onEditServiceChange()"><option value="">— select —</option><option value="Video Service">Video Service</option><option value="Video Editing Service">Video Editing Service</option><option value="Photography Service">Photography Service</option></select></div>
+        <div><label>Sub-service</label><select id="e-subservice"><option value="">— select —</option></select></div>
+      </div>
+      <div class="form-grid g2">
+        <div><label>Date</label><input id="e-date" type="date"></div>
+        <div><label>Status</label><select id="e-status"><option>Quote</option><option>Active</option><option>Complete</option></select></div>
+      </div>
+      <div class="form-grid g1">
+        <div><label>Description</label><textarea id="e-desc" rows="4"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeEditProj()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditProj()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PRINTABLE INVOICE (hidden on screen, shown when printing) -->
+<div id="print-area"></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -872,7 +1014,8 @@ function loadAll(){
     sb('GET','fixed_expenses','','order=created_at.asc'),
     sb('GET','logged_expenses','','order=created_at.asc'),
     sb('GET','custom_gear','','order=created_at.asc'),
-    sb('GET','fixed_packages','','order=created_at.asc')
+    sb('GET','fixed_packages','','order=created_at.asc'),
+    sb('GET','invoices','','order=invoice_no.asc')
   ]).then(function(res){
     projects=(res[0]||[]).map(function(p){
       return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -896,10 +1039,12 @@ function loadAll(){
     loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
     customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
     fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
+    invoices=(res[7]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||''};});
     refreshAllStatuses();refreshClientList();refreshAllDropdowns();
     renderCustomGearList();buildCustomGearChips();
     if(document.getElementById('fp-package'))renderFixedPackageOptions();
     renderRoyaltyClientList();
+    populateInvoiceSel();renderInvoiceHistory();
     renderAll();
     syncStatus('ok');
   }).catch(function(e){console.error('Load:',e);syncStatus('err');toast('Connection error');});
@@ -915,6 +1060,11 @@ function go(t){
   if(t==='income'){populateIncomeSel();renderIncome();}
   if(t==='profit')renderProfit();
   if(t==='ledger')renderLedger();
+  if(t==='invoice'){populateInvoiceSel();
+    if(!document.getElementById('inv-no').value)document.getElementById('inv-no').value=nextInvoiceNo();
+    if(!document.getElementById('inv-terms').value)document.getElementById('inv-terms').value=DEFAULT_TERMS;
+    if(!document.getElementById('inv-date').value)document.getElementById('inv-date').value=today();
+    renderInvLines();renderInvoiceHistory();renderInvoicePreview();}
   if(t==='calendar')renderCal();
 }
 
@@ -1487,12 +1637,13 @@ function renderLedger(){
     var rem=Math.max(0,(p.quote||0)-paid);
     var ps=payStatus(paid,p.quote);
     return'<tr'+(p.status==='Complete'?' class="row-complete"':'')+'>'
-      +'<td><div style="font-weight:700;color:#fff">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+'</td>'
+      +'<td><div style="font-weight:700;color:#fff">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+(p.desc?'<div class="desc-note">'+esc(p.desc)+'</div>':'')+'</td>'
       +'<td>'+(esc(p.subservice)||esc(p.service))+'</td><td>'+fmtDate(p.date)+'</td>'
       +'<td><div style="font-weight:700">'+(p.quote?fmt(p.quote):'—')+'</div>'+(p.discount&&p.discount>0?'<div class="td-muted" style="color:#7aa3e8">-BHD '+fmt(p.discount)+' disc.</div>':'')+(p.quote&&rem>0.001?'<div class="td-muted">Rem: '+fmt(rem)+'</div>':'')+'</td>'
       +'<td><span class="badge '+(p.status==='Quote'?'b-quote':p.status==='Active'?'b-active':'b-complete')+'">'+p.status+'</span></td>'
       +'<td>'+payPill(ps)+'</td>'
-      +'<td><button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></td></tr>';
+      +'<td><div class="row-actions"><button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
+      +'<button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></div></td></tr>';
   });
   // Carried-over rows appended after current month rows
   var coRows=coProjects.map(function(p){
@@ -1500,13 +1651,14 @@ function renderLedger(){
     var rem=Math.max(0,(p.quote||0)-paid);
     var ps=payStatus(paid,p.quote);
     return'<tr class="row-carriedover">'
-      +'<td><div style="font-weight:700;color:#a8c4f0">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+'<div class="td-muted" style="color:#7aa3e8">Started '+fmtDate(p.date)+'</div></td>'
+      +'<td><div style="font-weight:700;color:#a8c4f0">'+esc(p.client)+'</div>'+(p.contact?'<div class="td-muted">'+esc(p.contact)+'</div>':'')+(p.desc?'<div class="desc-note">'+esc(p.desc)+'</div>':'')+'<div class="td-muted" style="color:#7aa3e8">Started '+fmtDate(p.date)+'</div></td>'
       +'<td style="color:#7aa3e8">'+(esc(p.subservice)||esc(p.service))+'</td>'
       +'<td style="color:#7aa3e8">'+fmtDate(p.date)+'</td>'
       +'<td><div style="font-weight:700;color:#a8c4f0">'+(p.quote?fmt(p.quote):'—')+'</div>'+(rem>0.001?'<div class="td-muted" style="color:#7aa3e8">Rem: '+fmt(rem)+'</div>':'')+'</td>'
       +'<td><span class="badge b-carriedover">&#8617; Carried Over</span></td>'
       +'<td>'+payPill(ps)+'</td>'
-      +'<td><button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></td></tr>';
+      +'<td><div class="row-actions"><button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
+      +'<button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></div></td></tr>';
   });
   var allRows=[...currentRows,...coRows];
   if(!allRows.length){
@@ -1533,6 +1685,81 @@ function renderLedger(){
     +'<div class="metric"><div class="metric-label">Received (BHD)</div><div class="metric-value">'+fmt(rcvd)+'</div></div>'
     +(coOutstanding>0?'<div class="metric"><div class="metric-label">Carried Over</div><div class="metric-value" style="color:#7aa3e8">'+fmt(coOutstanding)+'</div><div class="metric-sub">from prev. months</div></div>':'');
 }
+/* ── EDIT PROJECT ── */
+var editingProjId=null;
+function openEditProj(id){
+  var p=projects.find(function(x){return x.id===id;});
+  if(!p){toast('Project not found.');return;}
+  editingProjId=id;
+  document.getElementById('e-client').value=p.client||'';
+  document.getElementById('e-contact').value=p.contact||'';
+  document.getElementById('e-service').value=p.service||'';
+  onEditServiceChange();
+  document.getElementById('e-subservice').value=p.subservice||'';
+  document.getElementById('e-date').value=p.date||'';
+  document.getElementById('e-status').value=p.status||'Quote';
+  document.getElementById('e-desc').value=p.desc||'';
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEditProj(){
+  editingProjId=null;
+  document.getElementById('edit-modal').classList.remove('open');
+}
+function onEditServiceChange(){
+  var svc=document.getElementById('e-service').value;
+  var sub=document.getElementById('e-subservice');
+  var cur=sub.value;
+  sub.innerHTML='<option value="">— select —</option>';
+  if(svc&&SERVICE_MAP[svc]){
+    SERVICE_MAP[svc].forEach(function(x){
+      var o=document.createElement('option');o.value=x;o.textContent=x;sub.appendChild(o);
+    });
+  }
+  if(cur)sub.value=cur;
+}
+function saveEditProj(){
+  var p=projects.find(function(x){return x.id===editingProjId;});
+  if(!p){toast('Project not found.');return;}
+  var client=document.getElementById('e-client').value.trim();
+  if(!client){toast('Client name cannot be empty.');return;}
+  var oldClient=p.client;
+  var contact=document.getElementById('e-contact').value.trim();
+  var service=document.getElementById('e-service').value;
+  var subservice=document.getElementById('e-subservice').value;
+  var date=document.getElementById('e-date').value||p.date;
+  var status=document.getElementById('e-status').value;
+  var desc=document.getElementById('e-desc').value.trim();
+
+  p.client=client;p.contact=contact;p.service=service;p.subservice=subservice;
+  p.date=date;p.status=status;p.desc=desc;
+
+  syncStatus('loading');
+  sb('PATCH','projects',{client:client,contact:contact,service:service,subservice:subservice,
+    date:date,status:status,description:desc},'id=eq.'+p.id)
+    .then(function(){
+      // keep payments attached if the client name changed
+      if(oldClient!==client){
+        payments.forEach(function(pay){
+          if(pay.projectId===p.id&&pay.client!==client){
+            pay.client=client;
+            sb('PATCH','payments',{client:client},'id=eq.'+pay.dbId).catch(function(e){console.error(e);});
+          }
+        });
+        var ex=clients.find(function(c){return c.name.toLowerCase()===client.toLowerCase();});
+        if(!ex){
+          clients.push({name:client,contact:contact,isRoyalty:false});
+          sb('POST','clients',{name:client,contact:contact},'').catch(function(e){console.error(e);});
+        }
+        refreshClientList();renderRoyaltyClientList();
+      }
+      closeEditProj();
+      refreshAllDropdowns();populateInvoiceSel();
+      renderLedger();renderIncome();renderProfit();renderCal();
+      syncStatus('ok');toast('Project updated');
+    })
+    .catch(function(e){console.error(e);syncStatus('err');toast('Update failed');});
+}
+
 function delProj(id){
   if(!confirm('Remove this project?'))return;
   syncStatus('loading');
@@ -1540,6 +1767,255 @@ function delProj(id){
     projects=projects.filter(function(p){return p.id!==id;});
     refreshAllDropdowns();renderLedger();renderCal();syncStatus('ok');toast('Project removed');
   }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
+}
+
+/* ══════════ INVOICES ══════════ */
+var invoices=[],invLines=[];
+var DEFAULT_TERMS="Upon agreeing with the terms of this quotation a 25% in advance payment and the remaining 75% amount should be paid after the submission of service.\n\nThe content will be delivered within 5 days.\n\nThe client has two revision adjustments after reviewing the final work. Any revision requests will be charged by the amount of work required.";
+
+function nextInvoiceNo(){
+  var max=invoices.reduce(function(a,i){return Math.max(a,parseInt(i.invoiceNo,10)||0);},0);
+  return max+1;
+}
+function padInv(n){return String(parseInt(n,10)||0).padStart(3,'0');}
+function invDateLabel(d){
+  if(!d)return'';
+  var parts=d.split('-');
+  var day=parseInt(parts[2],10);
+  var suf=(day%10===1&&day!==11)?'st':(day%10===2&&day!==12)?'nd':(day%10===3&&day!==13)?'rd':'th';
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  return day+suf+', '+months[parseInt(parts[1],10)-1]+' '+parts[0];
+}
+
+function populateInvoiceSel(){
+  var sel=document.getElementById('inv-proj');
+  if(!sel)return;
+  var cur=sel.value;
+  sel.innerHTML='<option value="">— select —</option>';
+  projects.forEach(function(p){
+    var o=document.createElement('option');
+    o.value=p.id;
+    o.textContent=p.client+' \u2014 '+(p.subservice||p.service)+' ('+fmtDate(p.date)+')';
+    sel.appendChild(o);
+  });
+  if(cur)sel.value=cur;
+}
+
+function addInvLine(title,sub,qty,rate){
+  invLines.push({id:Date.now()+Math.floor(Math.random()*1000),
+    title:title||'',sub:sub||'',qty:qty||1,rate:rate||0});
+  renderInvLines();renderInvoicePreview();
+}
+function removeInvLine(id){
+  invLines=invLines.filter(function(l){return l.id!==id;});
+  renderInvLines();renderInvoicePreview();
+}
+function updInvLine(id,field,val){
+  var l=invLines.find(function(x){return x.id===id;});
+  if(!l)return;
+  l[field]=(field==='qty'||field==='rate')?(parseFloat(val)||0):val;
+  renderInvoicePreview();
+}
+function renderInvLines(){
+  var c=document.getElementById('inv-lines');
+  if(!c)return;
+  if(!invLines.length){
+    c.innerHTML='<p style="font-size:12px;color:var(--text3)">No line items yet. Pick a project above, or add one manually.</p>';return;
+  }
+  c.innerHTML=invLines.map(function(l,i){
+    return'<div class="inv-line">'
+      +'<div class="inv-line-head"><span class="inv-line-num">Item '+(i+1)+'</span>'
+      +'<button class="btn btn-danger" onclick="removeInvLine('+l.id+')">&#10005;</button></div>'
+      +'<div class="form-grid g1" style="margin-bottom:8px"><div><label>Title</label>'
+      +'<input type="text" value="'+esc(l.title)+'" placeholder="e.g. Real Suites 1 - HDR Photographs" oninput="updInvLine('+l.id+',\'title\',this.value)"></div></div>'
+      +'<div class="form-grid g1" style="margin-bottom:8px"><div><label>Details (one per line)</label>'
+      +'<textarea rows="3" placeholder="Two bed room apartment\nSingle bed room apartment\nFacilities" oninput="updInvLine('+l.id+',\'sub\',this.value)">'+esc(l.sub)+'</textarea></div></div>'
+      +'<div class="form-grid g2" style="margin:0"><div><label>Qty</label>'
+      +'<input type="number" min="0" step="1" inputmode="numeric" value="'+l.qty+'" oninput="updInvLine('+l.id+',\'qty\',this.value)"></div>'
+      +'<div><label>Rate (BHD)</label>'
+      +'<input type="number" min="0" step="0.001" inputmode="decimal" value="'+l.rate+'" oninput="updInvLine('+l.id+',\'rate\',this.value)"></div></div>'
+      +'</div>';
+  }).join('');
+}
+
+function onInvoiceProjectChange(){
+  var id=parseInt(document.getElementById('inv-proj').value,10);
+  var p=projects.find(function(x){return x.id===id;});
+  if(!p){invLines=[];renderInvLines();renderInvoicePreview();return;}
+  document.getElementById('inv-client').value=p.client||'';
+  invLines=[];
+  // Prefill line items from the project's pricing mode
+  if(p.pricingMode==='royalty'){
+    var rate=p.royaltyRate||50;
+    if(p.royaltyPhotos>0)invLines.push({id:Date.now(),title:(p.subservice||'Photography')+' \u2014 Photographs',sub:p.desc||'',qty:p.royaltyPhotos,rate:rate});
+    if(p.royaltyVideos>0)invLines.push({id:Date.now()+1,title:(p.subservice||'Video')+' \u2014 Reels',sub:p.desc||'',qty:p.royaltyVideos,rate:rate});
+  } else if(p.pricingMode==='fixed'){
+    invLines.push({id:Date.now(),title:p.packageName||p.subservice||p.service,sub:p.desc||'',qty:1,rate:p.quote||0});
+  } else {
+    var n=(p.valuePhotos||0)+(p.valueVideos||0);
+    invLines.push({id:Date.now(),title:p.subservice||p.service,sub:p.desc||'',qty:n>0?n:1,
+      rate:n>0?Math.round(((p.quote||0)/n)*1000)/1000:(p.quote||0)});
+  }
+  if(!invLines.length)invLines.push({id:Date.now(),title:p.subservice||p.service,sub:p.desc||'',qty:1,rate:p.quote||0});
+  renderInvLines();renderInvoicePreview();
+}
+
+function invTotals(){
+  var subtotal=invLines.reduce(function(a,l){return a+((l.qty||0)*(l.rate||0));},0);
+  var dq=parseFloat(document.getElementById('inv-disc-qty').value)||0;
+  var dr=parseFloat(document.getElementById('inv-disc-rate').value)||0;
+  var discount=Math.min(dq*dr,subtotal);
+  return{subtotal:subtotal,discount:discount,total:subtotal-discount,dq:dq,dr:dr};
+}
+
+function invoiceDocHTML(){
+  var t=invTotals();
+  var no=padInv(document.getElementById('inv-no').value);
+  var date=document.getElementById('inv-date').value;
+  var client=document.getElementById('inv-client').value||'Client';
+  var terms=document.getElementById('inv-terms').value||'';
+  var rows=invLines.map(function(l,i){
+    var subLines=(l.sub||'').split('\n').filter(function(x){return x.trim();})
+      .map(function(x){return esc(x.trim());}).join('<br>');
+    return'<tr><td class="num">'+(i+1)+'</td>'
+      +'<td><div class="inv-item-title">'+esc(l.title||'Service')+'</div>'
+      +(subLines?'<div class="inv-item-sub">'+subLines+'</div>':'')+'</td>'
+      +'<td class="num">'+(l.qty||0)+'</td>'
+      +'<td class="money">'+fmt(l.rate)+' BD</td>'
+      +'<td class="money">'+fmt((l.qty||0)*(l.rate||0))+' BD</td></tr>';
+  }).join('');
+  var discRow=t.discount>0
+    ?'<tr class="inv-row-discount"><td></td><td>Discount</td><td class="num">'+t.dq+'</td>'
+      +'<td class="money">'+fmt(t.dr)+' BD</td><td class="money">'+fmt(t.discount)+' BD</td></tr>'
+    :'';
+  return'<div class="inv-doc">'
+    +'<div class="inv-doc-head"><div>'
+    +'<div class="inv-brand">Muhammed Bucheeri<br>Production</div>'
+    +'<div class="inv-to-label">Invoice To</div>'
+    +'<div class="inv-to-name">'+esc(client)+'</div>'
+    +'<div class="inv-meta">'
+    +'<div class="inv-meta-row"><span class="inv-meta-key">Invoice#</span><span>'+no+'</span></div>'
+    +'<div class="inv-meta-row"><span class="inv-meta-key">Date</span><span>'+invDateLabel(date)+'</span></div>'
+    +'</div></div>'
+    +'<img class="inv-logo" src="icon-512.png" alt="">'
+    +'</div>'
+    +'<table class="inv-tbl"><thead><tr>'
+    +'<th class="num">S.</th><th>SERVICE DESCRIPTION</th>'
+    +'<th class="num">QTY</th><th class="money">Rate</th><th class="money">Price</th>'
+    +'</tr></thead><tbody>'+rows+discRow
+    +'<tr class="inv-row-total"><td></td><td>Total</td><td></td><td></td>'
+    +'<td class="money">'+fmt(t.total)+' BD</td></tr>'
+    +'</tbody></table>'
+    +'<div class="inv-terms"><div>'
+    +'<div class="inv-terms-title">TERMS &amp; CONDITIONS</div>'
+    +'<div class="inv-terms-body">'+esc(terms)+'</div></div>'
+    +'<div class="inv-sign"><div class="inv-sign-line">Bucheeri</div>'
+    +'<div class="inv-sign-name">Mohammed Bucheeri</div>'
+    +'<div class="inv-sign-role">Founder of MB PRODUCTION</div></div>'
+    +'</div></div>';
+}
+
+function renderInvoicePreview(){
+  var wrap=document.getElementById('inv-preview-wrap');
+  if(!wrap)return;
+  var t=invTotals();
+  var doc=invoiceDocHTML();
+  document.getElementById('print-area').innerHTML=doc;
+  wrap.innerHTML='<div class="card"><div class="card-title">Preview</div>'
+    +'<div class="inv-total-line"><span style="color:var(--text2)">Subtotal</span><span>BHD '+fmt(t.subtotal)+'</span></div>'
+    +(t.discount>0?'<div class="inv-total-line"><span style="color:#7aa3e8">Discount ('+t.dq+' \u00d7 '+fmt(t.dr)+')</span><span style="color:#7aa3e8">- BHD '+fmt(t.discount)+'</span></div>':'')
+    +'<div class="inv-total-line grand"><span>Total</span><span>BHD '+fmt(t.total)+'</span></div>'
+    +'<div style="margin-top:1rem;border:1px solid var(--border);border-radius:var(--radius);overflow:auto;-webkit-overflow-scrolling:touch">'
+    +'<div style="width:794px;transform-origin:top left">'+doc+'</div></div>'
+    +'<p class="hint">Scroll the preview sideways to see the full page. Use Save / share as PDF to export it.</p></div>';
+}
+
+function printInvoice(){
+  if(!invLines.length){toast('Add at least one line item.');return;}
+  document.getElementById('print-area').innerHTML=invoiceDocHTML();
+  setTimeout(function(){window.print();},80);
+}
+
+function resetInvTerms(){
+  document.getElementById('inv-terms').value=DEFAULT_TERMS;
+  renderInvoicePreview();
+}
+
+function saveInvoice(){
+  if(!invLines.length){toast('Add at least one line item.');return;}
+  var t=invTotals();
+  var no=parseInt(document.getElementById('inv-no').value,10)||nextInvoiceNo();
+  var projId=parseInt(document.getElementById('inv-proj').value,10)||null;
+  var row={
+    invoice_no:no,project_id:projId,
+    client:(projects.find(function(x){return x.id===projId;})||{}).client||'',
+    client_label:document.getElementById('inv-client').value||'',
+    date:document.getElementById('inv-date').value||today(),
+    line_items:invLines.map(function(l){return{title:l.title,sub:l.sub,qty:l.qty,rate:l.rate};}),
+    discount_qty:t.dq,discount_rate:t.dr,
+    subtotal:Math.round(t.subtotal*1000)/1000,
+    discount:Math.round(t.discount*1000)/1000,
+    total:Math.round(t.total*1000)/1000,
+    terms:document.getElementById('inv-terms').value||''
+  };
+  syncStatus('loading');
+  sb('POST','invoices',row,'')
+    .then(function(rows){
+      var r=rows&&rows[0];
+      invoices.push({dbId:r?r.id:null,invoiceNo:no,projectId:projId,client:row.client,
+        clientLabel:row.client_label,date:row.date,lineItems:row.line_items,
+        discountQty:t.dq,discountRate:t.dr,subtotal:row.subtotal,discount:row.discount,
+        total:row.total,terms:row.terms});
+      renderInvoiceHistory();
+      document.getElementById('inv-no').value=nextInvoiceNo();
+      renderInvoicePreview();
+      syncStatus('ok');toast('Invoice '+padInv(no)+' saved');
+    })
+    .catch(function(e){console.error(e);syncStatus('err');toast('Save failed \u2014 '+e.message);});
+}
+
+function renderInvoiceHistory(){
+  var c=document.getElementById('inv-history');
+  if(!c)return;
+  var list=invoices.filter(function(i){return i.clientLabel!=='Numbering seed (safe to delete)';})
+    .slice().sort(function(a,b){return b.invoiceNo-a.invoiceNo;});
+  if(!list.length){
+    c.innerHTML='<p style="font-size:12px;color:var(--text3)">No invoices saved yet.</p>';return;
+  }
+  c.innerHTML='<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Client</th><th>Date</th><th>Total (BHD)</th><th>Actions</th></tr></thead><tbody>'
+    +list.map(function(i){
+      return'<tr><td style="font-weight:700">'+padInv(i.invoiceNo)+'</td>'
+        +'<td>'+esc(i.clientLabel||i.client)+'</td>'
+        +'<td>'+fmtDate(i.date)+'</td>'
+        +'<td style="font-weight:700;color:var(--accent)">'+fmt(i.total)+'</td>'
+        +'<td><div class="row-actions"><button class="btn btn-edit" onclick="loadInvoice('+i.dbId+')">Open</button>'
+        +'<button class="btn btn-danger" onclick="delInvoice('+i.dbId+')">&#10005;</button></div></td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+function loadInvoice(dbId){
+  var i=invoices.find(function(x){return x.dbId==dbId;});
+  if(!i)return;
+  document.getElementById('inv-no').value=i.invoiceNo;
+  document.getElementById('inv-date').value=i.date;
+  document.getElementById('inv-client').value=i.clientLabel||i.client;
+  document.getElementById('inv-disc-qty').value=i.discountQty||0;
+  document.getElementById('inv-disc-rate').value=i.discountRate||0;
+  document.getElementById('inv-terms').value=i.terms||DEFAULT_TERMS;
+  if(i.projectId)document.getElementById('inv-proj').value=i.projectId;
+  invLines=(i.lineItems||[]).map(function(l,idx){
+    return{id:Date.now()+idx,title:l.title||'',sub:l.sub||'',qty:l.qty||0,rate:l.rate||0};
+  });
+  renderInvLines();renderInvoicePreview();
+  toast('Invoice '+padInv(i.invoiceNo)+' loaded');
+}
+function delInvoice(dbId){
+  if(!confirm('Delete this invoice?'))return;
+  syncStatus('loading');
+  sb('DELETE','invoices','','id=eq.'+dbId)
+    .then(function(){
+      invoices=invoices.filter(function(x){return x.dbId!=dbId;});
+      renderInvoiceHistory();syncStatus('ok');toast('Invoice deleted');
+    }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
 }
 
 /* ── INCOME ── */
@@ -1788,7 +2264,8 @@ function startAutoRefresh(){
       sb('GET','fixed_expenses','','order=created_at.asc'),
       sb('GET','logged_expenses','','order=created_at.asc'),
       sb('GET','custom_gear','','order=created_at.asc'),
-      sb('GET','fixed_packages','','order=created_at.asc')
+      sb('GET','fixed_packages','','order=created_at.asc'),
+      sb('GET','invoices','','order=invoice_no.asc')
     ]).then(function(res){
       projects=(res[0]||[]).map(function(p){
         return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -1812,10 +2289,12 @@ function startAutoRefresh(){
       loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
       customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
       fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
+      invoices=(res[7]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||''};});
       refreshAllStatuses();refreshClientList();refreshAllDropdowns();
       renderCustomGearList();buildCustomGearChips();
       if(document.getElementById('fp-package'))renderFixedPackageOptions();
       renderRoyaltyClientList();
+      populateInvoiceSel();renderInvoiceHistory();
       renderAll();
       syncStatus('ok');
     }).catch(function(){syncStatus('err');});
@@ -1831,7 +2310,10 @@ buildGearPanels();
 renderOutsourceLines();
 renderCustomGearList();
 renderRoyaltyClientList();
+renderInvLines();
 renderFixedExpenses();
+document.getElementById('inv-date').value=today();
+document.getElementById('inv-terms').value=DEFAULT_TERMS;
 var im=curMo();
 ['ledger-month-sel','income-month-sel','profit-month-sel','cal-month-sel'].forEach(function(id){buildMonthOptions(id,im);});
 document.getElementById('i-date').value=today();
