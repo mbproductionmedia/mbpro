@@ -124,121 +124,75 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 
 /* ── PRINTABLE INVOICE ── */
 #print-area{display:none}
-.inv-doc{background:#fff;color:#1a1a1a;padding:38px 40px;font-family:'Madani Arabic','Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif}
-.inv-doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:24px}
-.inv-brand{font-size:26px;font-weight:800;line-height:1.15;letter-spacing:-.01em}
-.inv-to-label{font-size:21px;font-weight:400;margin-top:22px}
-.inv-to-name{font-size:27px;font-weight:800;line-height:1.15;margin-top:2px}
-.inv-logo{width:110px;height:110px;flex-shrink:0}
-.inv-meta{margin-top:20px;font-size:12px;line-height:1.9}
-.inv-meta-row{display:flex;gap:28px}
-.inv-meta-key{width:64px;color:#555}
-.inv-tbl{width:100%;border-collapse:collapse;margin-top:26px;font-size:12px}
-.inv-tbl th{background:#3a3a3a;color:#fff;text-align:left;padding:11px 12px;font-weight:600;font-size:11.5px;letter-spacing:.02em}
-.inv-tbl th.num,.inv-tbl td.num{text-align:center;width:62px}
-.inv-tbl th.money,.inv-tbl td.money{text-align:right;width:92px}
-.inv-tbl td{padding:13px 12px;vertical-align:top;border-bottom:1px solid #e2e2e2}
-.inv-item-title{font-weight:700;font-size:12.5px;margin-bottom:4px}
-.inv-item-sub{color:#4a4a4a;font-size:11.5px;line-height:1.65}
-.inv-row-discount td{background:#f4f4f4;font-size:12.5px}
-.inv-row-total td{background:#ebebeb;font-size:14px;font-weight:700;padding:14px 12px}
-.inv-terms{margin-top:34px;display:flex;justify-content:space-between;gap:36px;align-items:flex-start}
-.inv-terms-title{font-size:14px;font-weight:700;margin-bottom:9px}
-.inv-terms-body{font-size:11px;line-height:1.75;color:#333;white-space:pre-line;max-width:60%}
-.inv-sign{text-align:center;flex-shrink:0}
-.inv-sign-img{display:block;width:178px;height:auto;margin:0 auto 2px;opacity:.92}
-.inv-sign-rule{border-bottom:1px solid #1a1a1a;margin:0 8px 6px}
-.inv-sign-name{font-size:12px;font-weight:700}
-.inv-sign-role{font-size:10.5px;color:#555}
+.inv-page{width:210mm;height:297mm;background:#fff;overflow:hidden;position:relative}
+.inv-doc{
+  background:#fff;color:#1a1a1a;
+  font-family:'Madani Arabic','Poppins',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
+  width:210mm;min-height:297mm;padding:14mm 13mm;
+  display:flex;flex-direction:column;
+  transform-origin:top left;
+  -webkit-font-smoothing:antialiased;
+}
+.inv-doc *{color:#1a1a1a}
+.inv-doc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:8mm}
+.inv-head-left{flex:1;min-width:0}
+.inv-head-right{width:70mm;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end}
+.inv-brand{font-size:25pt;font-weight:800;line-height:1.12;letter-spacing:-.01em}
+.inv-to-label{font-size:20pt;font-weight:400;margin-top:7mm;line-height:1.1}
+.inv-to-name{font-size:26pt;font-weight:800;line-height:1.12;margin-top:1mm}
+.inv-logo{width:42mm;height:auto;display:block}
+.inv-meta{margin-top:8mm;font-size:10pt;line-height:1.8;width:100%}
+.inv-meta-row{display:flex;gap:5mm}
+.inv-meta-key{width:20mm;flex-shrink:0;font-weight:400}
+.inv-meta-val{font-weight:400;white-space:nowrap}
+
+.inv-tbl{width:100%;border-collapse:collapse;margin-top:8mm;font-size:10.5pt;table-layout:fixed;height:132mm}
+.inv-tbl col.c-s{width:11mm}
+.inv-tbl col.c-desc{width:auto}
+.inv-tbl col.c-qty{width:24mm}
+.inv-tbl col.c-rate{width:30mm}
+.inv-tbl col.c-price{width:32mm}
+.inv-tbl th{background:#3c3c3c;color:#fff !important;padding:4.2mm 3mm;font-weight:400;font-size:10.5pt;text-align:left}
+.inv-tbl th.num,.inv-tbl th.money{text-align:center}
+.inv-tbl th.money{text-align:right}
+.inv-tbl td{padding:3.6mm 3mm;vertical-align:top;background:#fff}
+.inv-tbl td.s-col{background:#d9d9d9;text-align:center;font-size:10pt}
+.inv-tbl td.num{background:#d9d9d9;text-align:center;border-left:2px solid #fff}
+.inv-tbl td.rate{background:#d9d9d9;text-align:center;border-left:2px solid #fff}
+.inv-tbl td.money{background:#d9d9d9;text-align:right;border-left:2px solid #fff}
+.inv-item-title{font-weight:700;font-size:11pt;line-height:1.3;margin-bottom:1.5mm}
+.inv-item-sub{font-size:10.5pt;line-height:1.45;font-weight:400}
+.inv-row-discount td{background:#d9d9d9}
+.inv-row-discount td.lbl{background:#fff;font-size:11pt}
+.inv-row-total td{background:#c9c9c9;font-size:11.5pt;padding:4.2mm 3mm}
+.inv-row-total td.lbl{background:#fff}
+.inv-spacer{height:100%}
+.inv-spacer td{background:#fff;padding:0;border:none}
+.inv-spacer td.g{background:#d9d9d9;border-left:2px solid #fff}
+
+.inv-terms{margin-top:9mm;display:flex;justify-content:space-between;gap:10mm;align-items:flex-start}
+.inv-terms-col{flex:1;max-width:108mm}
+.inv-terms-title{font-size:13pt;font-weight:700;margin-bottom:3mm}
+.inv-terms-body{font-size:9.5pt;line-height:1.5;white-space:pre-line;font-weight:400}
+.inv-sign{width:56mm;flex-shrink:0;text-align:center;padding-top:2mm}
+.inv-sign-img{display:block;width:40mm;height:auto;margin:0 auto -1mm}
+.inv-sign-rule{border-bottom:1px solid #1a1a1a;margin:0 2mm 2mm}
+.inv-sign-name{font-size:10.5pt;font-weight:700;line-height:1.3}
+.inv-sign-role{font-size:9.5pt;font-weight:400}
 
 @media print{
-  @page{size:A4;margin:0}
-  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
+  @page{size:A4 portrait;margin:0}
+  html,body{background:#fff !important;margin:0 !important;padding:0 !important;height:auto !important}
   body>.wrap,.toast,.modal-overlay{display:none !important}
-  html,body{background:#fff !important;padding:0 !important;margin:0 !important}
   #print-area{display:block !important}
-  .inv-doc{padding:26mm 18mm}
+  .inv-page{width:210mm;height:297mm;margin:0;overflow:hidden;
+    page-break-after:avoid;page-break-inside:avoid;break-inside:avoid}
+  .inv-doc{margin:0;page-break-inside:avoid;break-inside:avoid}
+  .inv-tbl,.inv-terms,.inv-doc-head{page-break-inside:avoid;break-inside:avoid}
+  tr{page-break-inside:avoid;break-inside:avoid}
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
 }
-.hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:.5rem}
-.divider{height:1px;background:var(--border);margin:1rem 0}
-.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius-lg)}
-table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
-th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tbody tr:hover td{background:var(--bg3)}
-tbody tr.row-complete td{color:var(--text3)}
-tbody tr.row-carriedover td{background:#111827}
-tbody tr.row-carriedover:hover td{background:#1a2030}
-.td-muted{font-size:11px;color:var(--text3);margin-top:2px}
-.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
-.b-quote{background:#1e1a33;color:#9d8fe8;border:1px solid #3d3360}
-.b-active{background:var(--accent-bg);color:var(--accent);border:1px solid #1a4535}
-.b-complete{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
-.b-received{background:var(--accent-bg);color:var(--accent);border:1px solid #1a4535}
-.b-pending{background:var(--amber-bg);color:var(--amber);border:1px solid #4a3510}
-.b-carriedover{background:#1a1f2e;color:#7aa3e8;border:1px solid #2a3d5e}
-.pay-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
-.pay-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.pay-unpaid{background:var(--red-bg);color:var(--red)}.pay-unpaid .pay-dot{background:var(--red)}
-.pay-partial{background:var(--amber-bg);color:var(--amber)}.pay-partial .pay-dot{background:var(--amber)}
-.pay-complete{background:var(--accent-bg);color:var(--accent)}.pay-complete .pay-dot{background:var(--accent)}
-.empty-state{text-align:center;padding:2.5rem 1rem}
-.empty-text{font-size:13px;color:var(--text3)}
-.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
-.month-nav label{margin:0;font-size:10px;white-space:nowrap;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
-.month-nav select{width:auto;flex:1;max-width:220px;font-size:14px}
-.cat-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:1.1rem 0 .5rem;padding-bottom:4px;border-bottom:1px solid var(--accent-bg)}
-.gear-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;margin-bottom:.25rem}
-.gear-chip{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);font-size:12px;user-select:none;-webkit-user-select:none;transition:all .12s;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.gear-chip:hover{border-color:var(--border2);background:var(--bg4)}
-.gear-chip.on{background:var(--accent-lo);border-color:var(--accent)}
-.gear-chip input[type=checkbox]{width:14px;height:14px;cursor:pointer;flex-shrink:0;accent-color:var(--accent);margin-top:2px}
-.gear-chip-name{color:var(--text);font-size:12px;pointer-events:none;line-height:1.4}
-.gear-chip-cost{font-size:11px;color:var(--text3);white-space:nowrap;pointer-events:none;margin-left:auto;flex-shrink:0}
-.gear-qty-wrap{display:none;align-items:center;gap:4px;margin-top:5px}
-.gear-qty-wrap select{width:auto;padding:3px 22px 3px 6px;font-size:11px;border-radius:6px;height:auto;background-size:8px;background-position:right 5px center}
-.quote-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:1.25rem}
-.quote-top{padding:1.15rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
-.quote-client{font-size:15px;font-weight:700;color:#fff}
-.quote-meta{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.7}
-.quote-body{padding:1.15rem}
-.quote-section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
-.quote-line{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
-.quote-line:last-child{border-bottom:none}
-.quote-section{margin-bottom:1rem}
-.quote-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:.9rem 1.15rem;border-top:1px solid var(--border);background:var(--accent-lo)}
-.quote-total-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text2)}
-.quote-total-amt{font-size:22px;font-weight:700;color:var(--accent)}
-/* discount strip */
-.discount-strip{background:#1a2030;border:1px solid #2a3d5e;border-radius:var(--radius);padding:.85rem 1rem;margin-top:.75rem}
-.discount-strip-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7aa3e8;margin-bottom:.6rem}
-.discount-row{display:flex;gap:8px;align-items:flex-end}
-.discount-row input{font-size:15px}
-.discount-row select{width:auto;flex-shrink:0;font-size:14px;padding:9px 28px 9px 11px}
-.discount-preview{font-size:12px;color:var(--text3);margin-top:.5rem}
-.discount-preview strong{color:#7aa3e8}
-/* carried over */
-.co-banner{background:#1a1f2e;border:1px solid #2a3d5e;border-radius:var(--radius);padding:10px 14px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px}
-.co-icon{font-size:16px;flex-shrink:0}
-.co-text{font-size:12px;color:#7aa3e8;line-height:1.6}
-.co-text strong{color:#a8c4f0}
-.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:1rem}
-.cal-head{text-align:center;font-size:9px;font-weight:700;color:var(--text3);padding:4px 0;letter-spacing:.04em}
-.cal-day{min-height:56px;border:1px solid var(--border);border-radius:var(--radius);padding:4px;background:var(--bg2)}
-.cal-day.other-month{opacity:.25}
-.cal-day.today{border-color:var(--accent);border-width:1.5px}
-.cal-num{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:2px}
-.cal-day.today .cal-num{color:var(--accent)}
-.cal-evt{font-size:9px;border-radius:3px;padding:1px 3px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;line-height:1.5;font-weight:600}
-.cal-evt.active{background:var(--accent-bg);color:var(--accent)}
-.cal-evt.quote{background:#1e1a33;color:#9d8fe8}
-.cal-evt.complete{background:var(--bg3);color:var(--text3)}
-.cal-legend{display:flex;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
-.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
-.cal-legend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-.toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
-.toast.show{opacity:1}
+
 @media(max-width:640px){
   .g2,.g3{grid-template-columns:1fr}
   .nav-btn{font-size:10px;padding:7px 4px}
@@ -1889,46 +1843,91 @@ function invoiceDocHTML(){
   var date=document.getElementById('inv-date').value;
   var client=document.getElementById('inv-client').value||'Client';
   var terms=document.getElementById('inv-terms').value||'';
+
   var rows=invLines.map(function(l,i){
     var subLines=(l.sub||'').split('\n').filter(function(x){return x.trim();})
       .map(function(x){return esc(x.trim());}).join('<br>');
-    return'<tr><td class="num">'+(i+1)+'</td>'
+    return'<tr><td class="s-col">'+(i+1)+'</td>'
       +'<td><div class="inv-item-title">'+esc(l.title||'Service')+'</div>'
       +(subLines?'<div class="inv-item-sub">'+subLines+'</div>':'')+'</td>'
       +'<td class="num">'+(l.qty||0)+'</td>'
-      +'<td class="money">'+invMoney(l.rate)+' BD</td>'
+      +'<td class="rate">'+invMoney(l.rate)+' BD</td>'
       +'<td class="money">'+invMoney((l.qty||0)*(l.rate||0))+' BD</td></tr>';
   }).join('');
+
+  // Always present. It absorbs the leftover height so the table body stays a
+  // fixed block like the original, and shrinks as more line items are added.
+  var filler='<tr class="inv-spacer"><td class="g"></td><td></td><td class="g"></td><td class="g"></td><td class="g"></td></tr>';
+
   var discRow=t.discount>0
-    ?'<tr class="inv-row-discount"><td></td><td>Discount</td><td class="num">'+t.dq+'</td>'
-      +'<td class="money">'+invMoney(t.dr)+' BD</td><td class="money">'+invMoney(t.discount)+' BD</td></tr>'
+    ?'<tr class="inv-row-discount"><td class="s-col"></td><td class="lbl">Discount</td>'
+      +'<td class="num">'+t.dq+'</td><td class="rate">'+invMoney(t.dr)+' BD</td>'
+      +'<td class="money">'+invMoney(t.discount)+' BD</td></tr>'
     :'';
-  return'<div class="inv-doc">'
-    +'<div class="inv-doc-head"><div>'
+
+  return'<div class="inv-page"><div class="inv-doc">'
+    +'<div class="inv-doc-head">'
+    +'<div class="inv-head-left">'
     +'<div class="inv-brand">Muhammed Bucheeri<br>Production</div>'
     +'<div class="inv-to-label">Invoice To</div>'
     +'<div class="inv-to-name">'+esc(client)+'</div>'
-    +'<div class="inv-meta">'
-    +'<div class="inv-meta-row"><span class="inv-meta-key">Invoice#</span><span>'+no+'</span></div>'
-    +'<div class="inv-meta-row"><span class="inv-meta-key">Date</span><span>'+invDateLabel(date)+'</span></div>'
-    +'</div></div>'
-    +'<img class="inv-logo" src="logo-invoice.png" alt="MB Production">'
     +'</div>'
-    +'<table class="inv-tbl"><thead><tr>'
+    +'<div class="inv-head-right">'
+    +'<img class="inv-logo" src="logo-invoice.png" alt="MB Production">'
+    +'<div class="inv-meta">'
+    +'<div class="inv-meta-row"><span class="inv-meta-key">Invoice#</span><span class="inv-meta-val">'+no+'</span></div>'
+    +'<div class="inv-meta-row"><span class="inv-meta-key">Date</span><span class="inv-meta-val">'+invDateLabel(date)+'</span></div>'
+    +'</div></div></div>'
+    +'<table class="inv-tbl">'
+    +'<colgroup><col class="c-s"><col class="c-desc"><col class="c-qty"><col class="c-rate"><col class="c-price"></colgroup>'
+    +'<thead><tr>'
     +'<th class="num">S.</th><th>SERVICE DESCRIPTION</th>'
-    +'<th class="num">QTY</th><th class="money">Rate</th><th class="money">Price</th>'
-    +'</tr></thead><tbody>'+rows+discRow
-    +'<tr class="inv-row-total"><td></td><td>Total</td><td></td><td></td>'
+    +'<th class="num">QTY</th><th class="num">Rate</th><th class="money">Price</th>'
+    +'</tr></thead><tbody>'+rows+filler+discRow
+    +'<tr class="inv-row-total"><td class="s-col"></td><td class="lbl">Total</td>'
+    +'<td class="num"></td><td class="rate"></td>'
     +'<td class="money">'+invMoney(t.total)+' BD</td></tr>'
     +'</tbody></table>'
-    +'<div class="inv-terms"><div>'
+    +'<div class="inv-terms">'
+    +'<div class="inv-terms-col">'
     +'<div class="inv-terms-title">TERMS &amp; CONDITIONS</div>'
     +'<div class="inv-terms-body">'+esc(terms)+'</div></div>'
     +'<div class="inv-sign"><img class="inv-sign-img" src="signature.png" alt="">'
     +'<div class="inv-sign-rule"></div>'
     +'<div class="inv-sign-name">Mohammed Bucheeri</div>'
     +'<div class="inv-sign-role">Founder of MB PRODUCTION</div></div>'
-    +'</div></div>';
+    +'</div></div></div>';
+}
+
+/* Shrinks a busy invoice just enough to keep everything on one page.
+   Measures the real bottom edge of the last block, because a flex column
+   clamps scrollHeight to the page and hides the overflow. */
+function fitInvoiceToPage(root){
+  if(!root)return;
+  var page=root.querySelector('.inv-page');
+  var doc=root.querySelector('.inv-doc');
+  if(!page||!doc)return;
+
+  doc.style.transform='';
+  doc.style.width='';
+
+  var last=doc.querySelector('.inv-terms');
+  if(!last)return;
+
+  var docTop=doc.getBoundingClientRect().top;
+  var pad=parseFloat(getComputedStyle(doc).paddingBottom)||0;
+  var needed=(last.getBoundingClientRect().bottom-docTop)+pad;
+  var avail=page.clientHeight;
+
+  // 2% safety margin: screen layout and print layout round differently, and a
+  // page that "fits" by a fraction of a pixel on screen still clips when printed.
+  var safe=avail*0.98;
+  if(needed>safe){
+    var k=safe/needed;
+    if(k<0.6)k=0.6;              // floor, below this it stops being readable
+    doc.style.transform='scale('+k+')';
+    doc.style.width=(100/k)+'%'; // keep the page width filled after scaling
+  }
 }
 
 function renderInvoicePreview(){
@@ -1941,15 +1940,40 @@ function renderInvoicePreview(){
     +'<div class="inv-total-line"><span style="color:var(--text2)">Subtotal</span><span>BHD '+fmt(t.subtotal)+'</span></div>'
     +(t.discount>0?'<div class="inv-total-line"><span style="color:#7aa3e8">Discount ('+t.dq+' \u00d7 '+fmt(t.dr)+')</span><span style="color:#7aa3e8">- BHD '+fmt(t.discount)+'</span></div>':'')
     +'<div class="inv-total-line grand"><span>Total</span><span>BHD '+fmt(t.total)+'</span></div>'
-    +'<div style="margin-top:1rem;border:1px solid var(--border);border-radius:var(--radius);overflow:auto;-webkit-overflow-scrolling:touch">'
-    +'<div style="width:794px;transform-origin:top left">'+doc+'</div></div>'
-    +'<p class="hint">Scroll the preview sideways to see the full page. Use Save / share as PDF to export it.</p></div>';
+    +'<div style="margin-top:1rem;border:1px solid var(--border);border-radius:var(--radius);background:#666;overflow:hidden">'
+    +'<div id="inv-scale-outer" style="overflow:hidden">'
+    +'<div id="inv-scale-inner" style="transform-origin:top left">'+doc+'</div></div></div>'
+    +'<p class="hint">This is the exact A4 page that will print. Use Save / share as PDF to export it.</p></div>';
+  fitInvoiceToPage(document.getElementById('inv-scale-inner'));
+  scaleInvPreview();
 }
+
+function scaleInvPreview(){
+  var outer=document.getElementById('inv-scale-outer');
+  var inner=document.getElementById('inv-scale-inner');
+  if(!outer||!inner)return;
+  var page=inner.querySelector('.inv-page')||inner.querySelector('.inv-doc');
+  if(!page)return;
+  var pw=page.offsetWidth||794, ph=page.offsetHeight||1123;
+  var avail=outer.clientWidth||outer.parentElement.clientWidth;
+  var k=avail/pw;
+  inner.style.transform='scale('+k+')';
+  outer.style.height=(ph*k)+'px';
+}
+window.addEventListener('resize',function(){scaleInvPreview();});
 
 function printInvoice(){
   if(!invLines.length){toast('Add at least one line item.');return;}
-  document.getElementById('print-area').innerHTML=invoiceDocHTML();
-  setTimeout(function(){window.print();},80);
+  var pa=document.getElementById('print-area');
+  pa.innerHTML=invoiceDocHTML();
+  pa.style.display='block';           // must be laid out to measure
+  pa.style.position='absolute';
+  pa.style.left='-10000px';
+  fitInvoiceToPage(pa);
+  setTimeout(function(){
+    pa.style.position='';pa.style.left='';pa.style.display='';
+    window.print();
+  },120);
 }
 
 function resetInvTerms(){
