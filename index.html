@@ -75,14 +75,14 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 #mode-btn-royalty.mode-active{background:#8a6d1f;color:#fff;border-color:#8a6d1f}
 .royalty-strip{background:#2a2312;border:1px solid #5c4a1a;border-radius:var(--radius);padding:.85rem 1rem}
 .royalty-strip-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#d4af4a;margin-bottom:.6rem}
-.royalty-opts{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.royalty-opt{display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);cursor:pointer;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;transition:all .12s}
-.royalty-opt:hover{background:var(--bg4)}
-.royalty-opt.on{background:#3a2f12;border-color:#d4af4a}
-.royalty-opt input[type=checkbox]{width:15px;height:15px;accent-color:#d4af4a;flex-shrink:0;cursor:pointer}
-.royalty-opt-name{font-size:13px;color:var(--text);flex:1}
-.royalty-opt-cost{font-size:11px;color:var(--text3);white-space:nowrap}
-.royalty-opt.on .royalty-opt-cost{color:#d4af4a}
+.royalty-opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.royalty-qty label{margin-bottom:5px}
+.royalty-qty-row{display:flex;align-items:stretch;gap:6px}
+.royalty-qty-row input{text-align:center;font-size:16px;font-weight:700;padding:8px 4px}
+.royalty-step{width:38px;flex-shrink:0;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg3);color:#d4af4a;font-size:17px;font-weight:700;line-height:1;cursor:pointer;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+.royalty-step:hover{background:#3a2f12;border-color:#d4af4a}
+.royalty-qty-sub{font-size:11px;color:var(--text3);margin-top:4px;text-align:center}
+.royalty-qty-sub.on{color:#d4af4a}
 .royalty-preview{font-size:12px;color:var(--text3);margin-top:.5rem}
 .royalty-preview strong{color:#d4af4a}
 .b-royalty{background:#2a2312;color:#d4af4a;border:1px solid #5c4a1a}
@@ -268,22 +268,30 @@ tbody tr.row-carriedover:hover td{background:#1a2030}
       <div class="royalty-strip">
         <div class="royalty-strip-label">Royalty rate — exclusive interior design studios</div>
         <div class="royalty-opts">
-          <div class="royalty-opt" id="ry-chip-photos" onclick="toggleRoyalty('photos')">
-            <input type="checkbox" id="ry-photos" onclick="event.stopPropagation();toggleRoyalty('photos',true)">
-            <span class="royalty-opt-name">Photos</span>
-            <span class="royalty-opt-cost" id="ry-photos-cost">BD 50</span>
+          <div class="royalty-qty">
+            <label>Photo sets</label>
+            <div class="royalty-qty-row">
+              <button type="button" class="royalty-step" onclick="stepRoyalty('photos',-1)">&minus;</button>
+              <input id="ry-photos" type="number" min="0" step="1" inputmode="numeric" value="0" oninput="updateQ()">
+              <button type="button" class="royalty-step" onclick="stepRoyalty('photos',1)">+</button>
+            </div>
+            <div class="royalty-qty-sub" id="ry-photos-sub">&mdash;</div>
           </div>
-          <div class="royalty-opt" id="ry-chip-videos" onclick="toggleRoyalty('videos')">
-            <input type="checkbox" id="ry-videos" onclick="event.stopPropagation();toggleRoyalty('videos',true)">
-            <span class="royalty-opt-name">Videos</span>
-            <span class="royalty-opt-cost" id="ry-videos-cost">BD 50</span>
+          <div class="royalty-qty">
+            <label>Video reels</label>
+            <div class="royalty-qty-row">
+              <button type="button" class="royalty-step" onclick="stepRoyalty('videos',-1)">&minus;</button>
+              <input id="ry-videos" type="number" min="0" step="1" inputmode="numeric" value="0" oninput="updateQ()">
+              <button type="button" class="royalty-step" onclick="stepRoyalty('videos',1)">+</button>
+            </div>
+            <div class="royalty-qty-sub" id="ry-videos-sub">&mdash;</div>
           </div>
         </div>
         <div class="form-grid g2" style="margin:.75rem 0 0">
-          <div><label>Rate per type (BHD)</label><input id="ry-rate" type="number" min="0" step="0.001" inputmode="decimal" value="50" oninput="updateQ()"></div>
-          <div><label>Client price (BHD)</label><input id="ry-price" type="number" min="0" step="0.001" inputmode="decimal" readonly style="background:var(--bg4);color:var(--accent);font-weight:700"></div>
+          <div><label>Rate per item (BHD)</label><input id="ry-rate" type="number" min="0" step="0.001" inputmode="decimal" value="50" oninput="updateQ()"></div>
+          <div><label>Client price (BHD)</label><input id="ry-price" type="number" min="0" step="0.001" inputmode="decimal" readonly style="background:var(--bg4);color:#d4af4a;font-weight:700"></div>
         </div>
-        <div class="royalty-preview" id="royalty-preview">Select photos, videos, or both.</div>
+        <div class="royalty-preview" id="royalty-preview">Set how many photo sets and video reels.</div>
       </div>
       <div class="discount-strip" id="royalty-floor-warning" style="display:none;background:var(--red-bg);border-color:#5e2a2a;margin-top:.75rem">
         <div class="discount-strip-label" style="color:var(--red)">⚠ Below cost floor</div>
@@ -877,7 +885,7 @@ function loadAll(){
         pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
         packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
         valuePhotos:p.value_photos||null,valueVideos:p.value_videos||null,valueComplexity:p.value_complexity||null,
-        royaltyRate:p.royalty_rate!=null?parseFloat(p.royalty_rate):null,royaltyPhotos:!!p.royalty_photos,royaltyVideos:!!p.royalty_videos,
+        royaltyRate:p.royalty_rate!=null?parseFloat(p.royalty_rate):null,royaltyPhotos:parseInt(p.royalty_photos,10)||0,royaltyVideos:parseInt(p.royalty_videos,10)||0,
         valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
     });
     payments=(res[1]||[]).map(function(p){
@@ -1036,37 +1044,37 @@ function royaltyRate(){
   var v=parseFloat(document.getElementById('ry-rate').value);
   return isNaN(v)||v<0?0:v;
 }
-function toggleRoyalty(which,fromCheckbox){
-  var cb=document.getElementById('ry-'+which);
-  if(!fromCheckbox)cb.checked=!cb.checked;
-  document.getElementById('ry-chip-'+which).classList.toggle('on',cb.checked);
+function royaltyQty(which){
+  var v=parseInt(document.getElementById('ry-'+which).value,10);
+  return isNaN(v)||v<0?0:v;
+}
+function stepRoyalty(which,delta){
+  var el=document.getElementById('ry-'+which);
+  el.value=Math.max(0,royaltyQty(which)+delta);
   updateQ();
 }
 function royaltyPrice(){
-  var rate=royaltyRate();
-  var n=0;
-  if(document.getElementById('ry-photos').checked)n++;
-  if(document.getElementById('ry-videos').checked)n++;
-  return rate*n;
+  return royaltyRate()*(royaltyQty('photos')+royaltyQty('videos'));
 }
 function refreshRoyaltyUI(){
   var rate=royaltyRate();
-  document.getElementById('ry-photos-cost').textContent='BD '+fmt(rate);
-  document.getElementById('ry-videos-cost').textContent='BD '+fmt(rate);
-  var ph=document.getElementById('ry-photos').checked;
-  var vi=document.getElementById('ry-videos').checked;
-  document.getElementById('ry-chip-photos').classList.toggle('on',ph);
-  document.getElementById('ry-chip-videos').classList.toggle('on',vi);
+  var ph=royaltyQty('photos'),vi=royaltyQty('videos');
+  var phSub=document.getElementById('ry-photos-sub');
+  var viSub=document.getElementById('ry-videos-sub');
+  phSub.innerHTML=ph>0?ph+' \u00d7 BHD '+fmt(rate)+' = <strong>BHD '+fmt(ph*rate)+'</strong>':'\u2014';
+  viSub.innerHTML=vi>0?vi+' \u00d7 BHD '+fmt(rate)+' = <strong>BHD '+fmt(vi*rate)+'</strong>':'\u2014';
+  phSub.classList.toggle('on',ph>0);
+  viSub.classList.toggle('on',vi>0);
   var price=royaltyPrice();
   document.getElementById('ry-price').value=price>0?fmt(price):'';
   var prev=document.getElementById('royalty-preview');
-  if(!ph&&!vi){
-    prev.innerHTML='Select photos, videos, or both.';
+  if(ph===0&&vi===0){
+    prev.innerHTML='Set how many photo sets and video reels.';
   } else {
     var parts=[];
-    if(ph)parts.push('Photos');
-    if(vi)parts.push('Videos');
-    prev.innerHTML=parts.join(' + ')+' at BHD '+fmt(rate)+' each &rarr; <strong>BHD '+fmt(price)+'</strong> flat, any scope.';
+    if(ph)parts.push(ph+' photo set'+(ph>1?'s':''));
+    if(vi)parts.push(vi+' video reel'+(vi>1?'s':''));
+    prev.innerHTML=parts.join(' + ')+' at BHD '+fmt(rate)+' each &rarr; <strong>BHD '+fmt(price)+'</strong>, any scope.';
   }
   return price;
 }
@@ -1112,13 +1120,12 @@ function renderClientQuotePreview(p,clientPrice){
   var bodyLines='';
   if(currentPricingMode==='royalty'){
     var rate=royaltyRate();
-    var ph=document.getElementById('ry-photos').checked;
-    var vi=document.getElementById('ry-videos').checked;
-    if(!ph&&!vi){
-      bodyLines='<div class="quote-line"><span style="color:var(--text2)">Select photos or videos</span><span style="color:var(--text3)"></span></div>';
+    var ph=royaltyQty('photos'),vi=royaltyQty('videos');
+    if(ph===0&&vi===0){
+      bodyLines='<div class="quote-line"><span style="color:var(--text2)">Set photo sets or video reels</span><span style="color:var(--text3)"></span></div>';
     } else {
-      if(ph)bodyLines+='<div class="quote-line"><span style="color:var(--text2)">Photography — royalty rate</span><span style="color:var(--text3)">BHD '+fmt(rate)+'</span></div>';
-      if(vi)bodyLines+='<div class="quote-line"><span style="color:var(--text2)">Video — royalty rate</span><span style="color:var(--text3)">BHD '+fmt(rate)+'</span></div>';
+      if(ph)bodyLines+='<div class="quote-line"><span style="color:var(--text2)">Photography \u2014 '+ph+' set'+(ph>1?'s':'')+' @ BHD '+fmt(rate)+'</span><span style="color:var(--text3)">BHD '+fmt(ph*rate)+'</span></div>';
+      if(vi)bodyLines+='<div class="quote-line"><span style="color:var(--text2)">Video \u2014 '+vi+' reel'+(vi>1?'s':'')+' @ BHD '+fmt(rate)+'</span><span style="color:var(--text3)">BHD '+fmt(vi*rate)+'</span></div>';
     }
   } else {
     var lineLabel=currentPricingMode==='fixed'?(pkg?pkg.name+(pkg.isRecurring?' (Monthly Retainer)':''):'Select a package'):'Custom Quote';
@@ -1148,8 +1155,8 @@ function loadGear(){
   document.getElementById('discount-card').style.display='none';
   document.getElementById('commute-cost').value='';
   // reset royalty selections
-  document.getElementById('ry-photos').checked=false;
-  document.getElementById('ry-videos').checked=false;
+  document.getElementById('ry-photos').value=0;
+  document.getElementById('ry-videos').value=0;
   document.getElementById('ry-rate').value=50;
 
   var pricingModeCard=document.getElementById('pricing-mode-card');
@@ -1200,8 +1207,8 @@ function loadGear(){
 
   if(modeToUse==='royalty'){
     if(p.royaltyRate)document.getElementById('ry-rate').value=p.royaltyRate;
-    document.getElementById('ry-photos').checked=!!p.royaltyPhotos;
-    document.getElementById('ry-videos').checked=!!p.royaltyVideos;
+    document.getElementById('ry-photos').value=p.royaltyPhotos||0;
+    document.getElementById('ry-videos').value=p.royaltyVideos||0;
   } else if(modeToUse==='fixed'){
     var pkg=p.packageName?findPackageByName(p.packageName):(suggestion.package?findPackageByName(suggestion.package):null);
     if(pkg){
@@ -1325,12 +1332,12 @@ function saveQ(){
   // ── Determine client price from the active pricing mode ──
   var clientPrice=0,packageId=null,packageName=null,packageVariant=null,customPrice=null;
   var valPhotos=null,valVideos=null,valComplex=null,valUsage=null,valTurn=null,valRevis=null;
-  var ryRate=null,ryPhotos=false,ryVideos=false;
+  var ryRate=null,ryPhotos=0,ryVideos=0;
 
   if(currentPricingMode==='royalty'){
-    ryPhotos=document.getElementById('ry-photos').checked;
-    ryVideos=document.getElementById('ry-videos').checked;
-    if(!ryPhotos&&!ryVideos){toast('Select photos, videos, or both.');return;}
+    ryPhotos=royaltyQty('photos');
+    ryVideos=royaltyQty('videos');
+    if(ryPhotos===0&&ryVideos===0){toast('Set at least one photo set or video reel.');return;}
     ryRate=royaltyRate();
     clientPrice=royaltyPrice();
     if(clientPrice<=0){toast('Set a royalty rate above zero.');return;}
@@ -1794,7 +1801,7 @@ function startAutoRefresh(){
           pricingMode:p.pricing_mode||null,packageId:p.package_id||null,packageName:p.package_name||null,
           packageVariant:p.package_variant||null,customPrice:p.custom_price!=null?parseFloat(p.custom_price):null,
           valuePhotos:p.value_photos||null,valueVideos:p.value_videos||null,valueComplexity:p.value_complexity||null,
-        royaltyRate:p.royalty_rate!=null?parseFloat(p.royalty_rate):null,royaltyPhotos:!!p.royalty_photos,royaltyVideos:!!p.royalty_videos,
+        royaltyRate:p.royalty_rate!=null?parseFloat(p.royalty_rate):null,royaltyPhotos:parseInt(p.royalty_photos,10)||0,royaltyVideos:parseInt(p.royalty_videos,10)||0,
           valueUsage:p.value_usage||null,valueTurnaround:p.value_turnaround||null,valueRevisions:p.value_revisions||null};
       });
       payments=(res[1]||[]).map(function(p){
