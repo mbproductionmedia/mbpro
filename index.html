@@ -193,6 +193,88 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
 }
 
+
+/* ── CORE UI (restored) ── */
+.hint{font-size:11px;color:var(--text3);line-height:1.6;margin-top:.5rem}
+.divider{height:1px;background:var(--border);margin:1rem 0}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:var(--radius-lg)}
+/* Scoped to .tbl-wrap so these never leak into the printed invoice table */
+.tbl-wrap table{width:100%;border-collapse:collapse;font-size:12px;min-width:400px}
+.tbl-wrap th{text-align:left;font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text3);padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border);white-space:nowrap}
+.tbl-wrap td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle}
+.tbl-wrap tr:last-child td{border-bottom:none}
+.tbl-wrap tbody tr:hover td{background:var(--bg3)}
+.tbl-wrap tbody tr.row-complete td{color:var(--text3)}
+.tbl-wrap tbody tr.row-carriedover td{background:#111827}
+.tbl-wrap tbody tr.row-carriedover:hover td{background:#1a2030}
+.td-muted{font-size:11px;color:var(--text3);margin-top:2px}
+.badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.03em;white-space:nowrap}
+.b-quote{background:#1e1a33;color:#9d8fe8;border:1px solid #3d3360}
+.b-active{background:var(--accent-bg);color:var(--accent);border:1px solid #1a4535}
+.b-complete{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
+.b-received{background:var(--accent-bg);color:var(--accent);border:1px solid #1a4535}
+.b-pending{background:var(--amber-bg);color:var(--amber);border:1px solid #4a3510}
+.b-carriedover{background:#1a1f2e;color:#7aa3e8;border:1px solid #2a3d5e}
+.pay-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;white-space:nowrap}
+.pay-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.pay-unpaid{background:var(--red-bg);color:var(--red)}.pay-unpaid .pay-dot{background:var(--red)}
+.pay-partial{background:var(--amber-bg);color:var(--amber)}.pay-partial .pay-dot{background:var(--amber)}
+.pay-complete{background:var(--accent-bg);color:var(--accent)}.pay-complete .pay-dot{background:var(--accent)}
+.empty-state{text-align:center;padding:2.5rem 1rem}
+.empty-text{font-size:13px;color:var(--text3)}
+.month-nav{display:flex;align-items:center;gap:10px;margin-bottom:1.25rem}
+.month-nav label{margin:0;font-size:10px;white-space:nowrap;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text3)}
+.month-nav select{width:auto;flex:1;max-width:220px;font-size:14px}
+.cat-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin:1.1rem 0 .5rem;padding-bottom:4px;border-bottom:1px solid var(--accent-bg)}
+.gear-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:5px;margin-bottom:.25rem}
+.gear-chip{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);font-size:12px;user-select:none;-webkit-user-select:none;transition:all .12s;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.gear-chip:hover{border-color:var(--border2);background:var(--bg4)}
+.gear-chip.on{background:var(--accent-lo);border-color:var(--accent)}
+.gear-chip input[type=checkbox]{width:14px;height:14px;cursor:pointer;flex-shrink:0;accent-color:var(--accent);margin-top:2px}
+.gear-chip-name{color:var(--text);font-size:12px;pointer-events:none;line-height:1.4}
+.gear-chip-cost{font-size:11px;color:var(--text3);white-space:nowrap;pointer-events:none;margin-left:auto;flex-shrink:0}
+.gear-qty-wrap{display:none;align-items:center;gap:4px;margin-top:5px}
+.gear-qty-wrap select{width:auto;padding:3px 22px 3px 6px;font-size:11px;border-radius:6px;height:auto;background-size:8px;background-position:right 5px center}
+.quote-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-top:1.25rem}
+.quote-top{padding:1.15rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}
+.quote-client{font-size:15px;font-weight:700;color:#fff}
+.quote-meta{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.7}
+.quote-body{padding:1.15rem}
+.quote-section-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem}
+.quote-line{display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)}
+.quote-line:last-child{border-bottom:none}
+.quote-section{margin-bottom:1rem}
+.quote-total-row{display:flex;justify-content:space-between;align-items:baseline;padding:.9rem 1.15rem;border-top:1px solid var(--border);background:var(--accent-lo)}
+.quote-total-label{font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--text2)}
+.quote-total-amt{font-size:22px;font-weight:700;color:var(--accent)}
+.discount-strip{background:#1a2030;border:1px solid #2a3d5e;border-radius:var(--radius);padding:.85rem 1rem;margin-top:.75rem}
+.discount-strip-label{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7aa3e8;margin-bottom:.6rem}
+.discount-row{display:flex;gap:8px;align-items:flex-end}
+.discount-row input{font-size:15px}
+.discount-row select{width:auto;flex-shrink:0;font-size:14px;padding:9px 28px 9px 11px}
+.discount-preview{font-size:12px;color:var(--text3);margin-top:.5rem}
+.discount-preview strong{color:#7aa3e8}
+.co-banner{background:#1a1f2e;border:1px solid #2a3d5e;border-radius:var(--radius);padding:10px 14px;margin-bottom:1.25rem;display:flex;align-items:center;gap:10px}
+.co-icon{font-size:16px;flex-shrink:0;color:#7aa3e8}
+.co-text{font-size:12px;color:#7aa3e8;line-height:1.6}
+.co-text strong{color:#a8c4f0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:1rem}
+.cal-head{text-align:center;font-size:9px;font-weight:700;color:var(--text3);padding:4px 0;letter-spacing:.04em}
+.cal-day{min-height:56px;border:1px solid var(--border);border-radius:var(--radius);padding:4px;background:var(--bg2)}
+.cal-day.other-month{opacity:.25}
+.cal-day.today{border-color:var(--accent);border-width:1.5px}
+.cal-num{font-size:10px;font-weight:700;color:var(--text3);margin-bottom:2px}
+.cal-day.today .cal-num{color:var(--accent)}
+.cal-evt{font-size:9px;border-radius:3px;padding:1px 3px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;line-height:1.5;font-weight:600}
+.cal-evt.active{background:var(--accent-bg);color:var(--accent)}
+.cal-evt.quote{background:#1e1a33;color:#9d8fe8}
+.cal-evt.complete{background:var(--bg3);color:var(--text3)}
+.cal-legend{display:flex;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
+.cal-legend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
+.toast.show{opacity:1}
+
 @media(max-width:640px){
   .g2,.g3{grid-template-columns:1fr}
   .nav-btn{font-size:10px;padding:7px 4px}
@@ -235,7 +317,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v3</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v4</span></div>
   </div>
 </div>
 
@@ -1751,15 +1833,23 @@ function invDateLabel(d){
   return day+suf+', '+months[parseInt(parts[1],10)-1]+' '+parts[0];
 }
 
-function populateInvoiceSel(){
+function populateInvoiceSel(keepId){
   var sel=document.getElementById('inv-proj');
   if(!sel)return;
-  var cur=sel.value;
-  sel.innerHTML='<option value="">— select —</option>';
-  projects.forEach(function(p){
+  var cur=keepId!=null?String(keepId):sel.value;
+  // Only projects still at Quote stage, newest first. A project opened from a
+  // saved invoice stays listed even if it has since moved on, so it isn't lost.
+  var list=projects.filter(function(p){
+    return p.status==='Quote'||(cur&&String(p.id)===cur);
+  }).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
+  sel.innerHTML='<option value="">'+(list.length?'\u2014 select a quote \u2014':'\u2014 no open quotes \u2014')+'</option>';
+  list.forEach(function(p){
     var o=document.createElement('option');
     o.value=p.id;
-    o.textContent=p.client+' \u2014 '+(p.subservice||p.service)+' ('+fmtDate(p.date)+')';
+    var line=p.client+' \u2014 '+(p.subservice||p.service)+' ('+fmtDate(p.date)+')';
+    if(p.desc)line+=' \u00b7 '+(p.desc.length>28?p.desc.slice(0,28)+'\u2026':p.desc);
+    if(p.status!=='Quote')line+=' ['+p.status+']';
+    o.textContent=line;
     sel.appendChild(o);
   });
   if(cur)sel.value=cur;
@@ -2041,6 +2131,7 @@ function loadInvoice(dbId){
   document.getElementById('inv-disc-qty').value=i.discountQty||0;
   document.getElementById('inv-disc-rate').value=i.discountRate||0;
   document.getElementById('inv-terms').value=i.terms||DEFAULT_TERMS;
+  populateInvoiceSel(i.projectId||'');
   if(i.projectId)document.getElementById('inv-proj').value=i.projectId;
   invLines=(i.lineItems||[]).map(function(l,idx){
     return{id:Date.now()+idx,title:l.title||'',sub:l.sub||'',qty:l.qty||0,rate:l.rate||0};
