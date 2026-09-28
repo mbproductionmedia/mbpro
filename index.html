@@ -111,6 +111,16 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .modal-body{padding:1.15rem}
 .modal-foot{display:flex;gap:8px;justify-content:flex-end;padding:1rem 1.15rem;border-top:1px solid var(--border)}
 .btn-edit{color:var(--accent);border-color:transparent;padding:4px 10px;font-size:11px;background:none}
+.btn-price{color:#d4af4a;border-color:transparent;padding:4px 10px;font-size:11px;background:none}
+.btn-price:hover{background:#2a2312}
+.day-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);margin-bottom:6px}
+.day-date{font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap}
+.day-note{font-size:12px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.inv-opt{display:flex;align-items:center;gap:9px;font-size:13px;color:var(--text);font-weight:400;letter-spacing:0;text-transform:none;margin:0;cursor:pointer}
+.inv-opt input{width:16px;height:16px;accent-color:var(--accent);flex-shrink:0}
+.inv-paid-stamp{position:absolute;top:96mm;right:20mm;border:3px solid #1a7a4a;color:#1a7a4a !important;
+  font-size:26pt;font-weight:800;letter-spacing:.08em;padding:3mm 8mm;border-radius:3mm;
+  transform:rotate(-14deg);opacity:.85}
 .btn-edit:hover{background:var(--accent-lo)}
 .row-actions{display:flex;gap:2px;align-items:center}
 .desc-note{font-size:11px;color:var(--text3);margin-top:3px;font-style:italic;line-height:1.5}
@@ -317,7 +327,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v4</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v5</span></div>
   </div>
 </div>
 
@@ -327,7 +337,6 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   <button class="nav-btn" onclick="go('ledger')">Ledger</button>
   <button class="nav-btn" onclick="go('invoice')">Invoice</button>
   <button class="nav-btn" onclick="go('income')">Income</button>
-  <button class="nav-btn" onclick="go('profit')">Profit</button>
   <button class="nav-btn" onclick="go('calendar')">Calendar</button>
 </div>
 
@@ -552,6 +561,12 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
 
   <div class="card">
+    <div class="card-title">Options</div>
+    <label class="inv-opt"><input type="checkbox" id="inv-paid-stamp" onchange="renderInvoicePreview()"> Print a PAID stamp on this invoice</label>
+    <p class="hint" style="margin:.4rem 0 0">Leave off when you are asking for payment. Turn on for a receipt.</p>
+  </div>
+
+  <div class="card">
     <div class="card-title">Terms &amp; conditions</div>
     <textarea id="inv-terms" rows="6" oninput="renderInvoicePreview()"></textarea>
     <div class="btn-row"><button class="btn" onclick="resetInvTerms()">Reset to default terms</button></div>
@@ -562,6 +577,8 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   <div class="btn-row" style="margin-top:1rem">
     <button class="btn btn-primary" onclick="printInvoice()">Save / share as PDF</button>
     <button class="btn" onclick="saveInvoice()">Save invoice</button>
+    <button class="btn" onclick="newInvoice()">New invoice</button>
+    <button class="btn" onclick="syncQuoteToInvoice()">Update project quote</button>
   </div>
 
   <div class="card" style="margin-top:1rem">
@@ -594,50 +611,10 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </table></div>
 </div>
 
-<!-- PROFIT -->
-<div id="tab-profit" class="panel">
-  <div class="month-nav"><label>Month</label><select id="profit-month-sel" onchange="renderProfit()"></select></div>
-  <div class="metrics" id="profit-stats"></div>
-  <div class="card">
-    <div class="card-title">Income — completed projects</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Client</th><th>Service</th><th>Quoted</th><th>Gear</th><th>Edit</th><th>Outsource</th><th>Cost</th><th>Margin</th><th>%</th></tr></thead>
-      <tbody id="profit-body"></tbody>
-    </table></div>
-    <p class="hint" style="margin-top:.75rem">Only <strong style="color:var(--text2)">Complete</strong> projects whose final payment landed in this month.</p>
-  </div>
-  <div class="card">
-    <div class="card-title">Fixed monthly expenses</div>
-    <div id="fixed-exp-list"></div>
-    <div class="divider"></div>
-    <div class="form-grid g2">
-      <div><label>Name</label><input type="text" id="fe-name" placeholder="e.g. Phone bill"></div>
-      <div><label>Amount (BHD)</label><input type="number" id="fe-amt" placeholder="0.000" min="0" step="0.001" inputmode="decimal"></div>
-    </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="addFixedExp()">+ Add fixed expense</button></div>
-  </div>
-  <div class="card">
-    <div class="card-title">Logged expenses this month</div>
-    <div class="tbl-wrap"><table>
-      <thead><tr><th>Description</th><th>Category</th><th>Date</th><th>Amount (BHD)</th><th></th></tr></thead>
-      <tbody id="logged-exp-body"></tbody>
-    </table></div>
-    <div class="divider"></div>
-    <div class="form-grid g2">
-      <div><label>Description</label><input type="text" id="le-desc" placeholder="e.g. Grocery run"></div>
-      <div><label>Category</label><select id="le-cat"><option>Phone Bills</option><option>Petrol</option><option>Food</option><option>Water &amp; Electricity</option><option>Child Support</option><option>Other</option></select></div>
-    </div>
-    <div class="form-grid g2">
-      <div><label>Amount (BHD)</label><input type="number" id="le-amt" placeholder="0.000" min="0" step="0.001" inputmode="decimal"></div>
-      <div><label>Date</label><input type="date" id="le-date"></div>
-    </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="addLoggedExp()">+ Log expense</button></div>
-  </div>
-</div>
-
 <!-- CALENDAR -->
 <div id="tab-calendar" class="panel">
-  <div class="month-nav"><label>Month</label><select id="cal-month-sel" onchange="renderCal()"></select></div>
+  <div class="month-nav"><label>Month</label><select id="cal-month-sel" onchange="renderCal()"></select>
+    <button class="btn" onclick="exportMonthICS()" style="white-space:nowrap">Add month to calendar</button></div>
   <div class="cal-legend">
     <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--accent-bg);border:1px solid #1a4535"></div>Active</div>
     <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:#1e1a33;border:1px solid #3d3360"></div>Quote</div>
@@ -669,6 +646,18 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
       </div>
       <div class="form-grid g1">
         <div><label>Description</label><textarea id="e-desc" rows="4"></textarea></div>
+      </div>
+      <div class="divider"></div>
+      <label style="margin-bottom:6px">Shoot days</label>
+      <p class="hint" style="margin:0 0 .6rem">Add a row per working day, each with its own label. Leave empty to just use the project date.</p>
+      <div id="e-days"></div>
+      <div class="form-grid g2" style="margin-top:8px">
+        <div><label>Date</label><input id="e-day-date" type="date"></div>
+        <div><label>Label</label><input id="e-day-note" type="text" placeholder="e.g. Lifestyle, office"></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="addShootDay()">+ Add day</button>
+        <button class="btn" onclick="exportProjectICS()">Add to phone calendar</button>
       </div>
     </div>
     <div class="modal-foot">
@@ -746,7 +735,7 @@ var SERVICE_PRICING_MODE={
 var fixedPackages=[]; // loaded from Supabase
 
 var projects=[],payments=[],clients=[],gSel={},outsourceLines=[];
-var fixedExpenses=[],loggedExpenses=[],customGear=[];
+var customGear=[],projectDays=[];
 var now=new Date();
 var CUR_YEAR=now.getFullYear(),CUR_MONTH=now.getMonth();
 
@@ -1057,11 +1046,10 @@ function loadAll(){
     sb('GET','projects','','order=created_at.asc'),
     sb('GET','payments','','order=created_at.asc'),
     sb('GET','clients','','order=name.asc'),
-    sb('GET','fixed_expenses','','order=created_at.asc'),
-    sb('GET','logged_expenses','','order=created_at.asc'),
     sb('GET','custom_gear','','order=created_at.asc'),
     sb('GET','fixed_packages','','order=created_at.asc'),
-    sb('GET','invoices','','order=invoice_no.asc')
+    sb('GET','invoices','','order=invoice_no.asc'),
+    sb('GET','project_days','','order=date.asc')
   ]).then(function(res){
     projects=(res[0]||[]).map(function(p){
       return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -1081,11 +1069,10 @@ function loadAll(){
       return{dbId:p.id,client:p.client||'',mile:p.mile||'',amount:parseFloat(p.amount)||0,date:p.date||'',type:p.type||'Received',projectId:p.project_id||null};
     });
     clients=(res[2]||[]).map(function(c){return{name:c.name||'',contact:c.contact||'',isRoyalty:!!c.is_royalty};});
-    fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
-    loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
-    customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
-    fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
-    invoices=(res[7]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||''};});
+    customGear=(res[3]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+    fixedPackages=(res[4]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
+    projectDays=(res[6]||[]).map(function(d){return{dbId:d.id,projectId:d.project_id,date:d.date||'',note:d.note||''};});
+    invoices=(res[5]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||'',paidOverride:i.paid_override||null};});
     refreshAllStatuses();refreshClientList();refreshAllDropdowns();
     renderCustomGearList();buildCustomGearChips();
     if(document.getElementById('fp-package'))renderFixedPackageOptions();
@@ -1095,7 +1082,7 @@ function loadAll(){
     syncStatus('ok');
   }).catch(function(e){console.error('Load:',e);syncStatus('err');toast('Connection error');});
 }
-function renderAll(){renderLedger();renderIncome();renderProfit();renderCal();}
+function renderAll(){renderLedger();renderIncome();renderCal();}
 
 function go(t){
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
@@ -1104,7 +1091,6 @@ function go(t){
   document.getElementById('tab-'+t).classList.add('active');
   if(t==='gear'){populateGearSel();loadGear();}
   if(t==='income'){populateIncomeSel();renderIncome();}
-  if(t==='profit')renderProfit();
   if(t==='ledger')renderLedger();
   if(t==='invoice'){populateInvoiceSel();
     if(!document.getElementById('inv-no').value)document.getElementById('inv-no').value=nextInvoiceNo();
@@ -1556,7 +1542,7 @@ function saveQ(){
   }
 
   // Update in-memory project object
-  p.quote=Math.round(clientPrice*1000)/1000; // client-facing price drives ledger/income/profit everywhere else
+  p.quote=Math.round(clientPrice*1000)/1000; // client-facing price drives ledger and income everywhere else
   p.discount=Math.round(discount*1000)/1000;
   p.discountType=document.getElementById('g-discount-type').value;
   p.gSel=JSON.parse(JSON.stringify(gSel));
@@ -1689,6 +1675,7 @@ function renderLedger(){
       +'<td><span class="badge '+(p.status==='Quote'?'b-quote':p.status==='Active'?'b-active':'b-complete')+'">'+p.status+'</span></td>'
       +'<td>'+payPill(ps)+'</td>'
       +'<td><div class="row-actions"><button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
+      +'<button class="btn btn-price" onclick="priceProject('+p.id+')">Price</button>'
       +'<button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></div></td></tr>';
   });
   // Carried-over rows appended after current month rows
@@ -1704,6 +1691,7 @@ function renderLedger(){
       +'<td><span class="badge b-carriedover">&#8617; Carried Over</span></td>'
       +'<td>'+payPill(ps)+'</td>'
       +'<td><div class="row-actions"><button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
+      +'<button class="btn btn-price" onclick="priceProject('+p.id+')">Price</button>'
       +'<button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></div></td></tr>';
   });
   var allRows=[...currentRows,...coRows];
@@ -1731,6 +1719,132 @@ function renderLedger(){
     +'<div class="metric"><div class="metric-label">Received (BHD)</div><div class="metric-value">'+fmt(rcvd)+'</div></div>'
     +(coOutstanding>0?'<div class="metric"><div class="metric-label">Carried Over</div><div class="metric-value" style="color:#7aa3e8">'+fmt(coOutstanding)+'</div><div class="metric-sub">from prev. months</div></div>':'');
 }
+/* Jump from a Ledger row straight to that project's pricing screen. */
+function priceProject(id){
+  var p=projects.find(function(x){return x.id===id;});
+  if(!p){toast('Project not found.');return;}
+  go('gear');
+  document.getElementById('g-proj').value=id;
+  loadGear();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ── SHOOT DAYS ── */
+function daysForProject(projId){
+  return projectDays.filter(function(d){return d.projectId===projId;})
+                    .sort(function(a,b){return (a.date||'').localeCompare(b.date||'');});
+}
+function renderDayList(){
+  var c=document.getElementById('e-days');
+  if(!c)return;
+  var list=daysForProject(editingProjId);
+  if(!list.length){
+    c.innerHTML='<p style="font-size:12px;color:var(--text3);margin-bottom:.5rem">No shoot days yet. The project date is used on the calendar.</p>';
+    return;
+  }
+  c.innerHTML=list.map(function(d){
+    return'<div class="day-row">'
+      +'<span class="day-date">'+fmtDate(d.date)+'</span>'
+      +'<span class="day-note">'+(esc(d.note)||'<span style="color:var(--text3)">no label</span>')+'</span>'
+      +'<button class="btn btn-danger" onclick="delShootDay('+d.dbId+')">&#10005;</button></div>';
+  }).join('');
+}
+function addShootDay(){
+  if(!editingProjId){toast('Open a project first.');return;}
+  var date=document.getElementById('e-day-date').value;
+  var note=document.getElementById('e-day-note').value.trim();
+  if(!date){toast('Pick a date for the shoot day.');return;}
+  syncStatus('loading');
+  sb('POST','project_days',{project_id:editingProjId,date:date,note:note},'')
+    .then(function(rows){
+      var r=rows&&rows[0];
+      projectDays.push({dbId:r?r.id:null,projectId:editingProjId,date:date,note:note});
+      document.getElementById('e-day-note').value='';
+      renderDayList();renderCal();syncStatus('ok');toast('Shoot day added');
+    }).catch(function(e){console.error(e);syncStatus('err');toast('Could not add day');});
+}
+function delShootDay(dbId){
+  syncStatus('loading');
+  sb('DELETE','project_days','','id=eq.'+dbId)
+    .then(function(){
+      projectDays=projectDays.filter(function(d){return d.dbId!=dbId;});
+      renderDayList();renderCal();syncStatus('ok');toast('Shoot day removed');
+    }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
+}
+
+/* ── CALENDAR EXPORT (.ics) ──
+   A web app cannot write into Apple Calendar on iOS. An .ics file can:
+   opening it offers to add the events, and the VALARM inside becomes a real
+   phone notification the day before. */
+function icsStamp(d,nextDay){
+  var pr=d.split('-');
+  var dt=new Date(Date.UTC(+pr[0],+pr[1]-1,+pr[2]));
+  if(nextDay)dt.setUTCDate(dt.getUTCDate()+1);
+  return dt.toISOString().slice(0,10).replace(/-/g,'');
+}
+function icsEscape(t){
+  return String(t||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+}
+function buildICS(events,calName){
+  var out=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//MB Production//Dashboard//EN',
+           'CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:'+icsEscape(calName)];
+  var stamp=new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+  events.forEach(function(e,i){
+    out.push('BEGIN:VEVENT');
+    out.push('UID:mbpro-'+e.uid+'-'+i+'@mbproduction');
+    out.push('DTSTAMP:'+stamp);
+    out.push('DTSTART;VALUE=DATE:'+icsStamp(e.date,false));
+    out.push('DTEND;VALUE=DATE:'+icsStamp(e.date,true));
+    out.push('SUMMARY:'+icsEscape(e.title));
+    if(e.desc)out.push('DESCRIPTION:'+icsEscape(e.desc));
+    out.push('BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY',
+             'DESCRIPTION:'+icsEscape(e.title),'END:VALARM');
+    out.push('END:VEVENT');
+  });
+  out.push('END:VCALENDAR');
+  return out.join('\r\n');
+}
+function downloadICS(text,filename){
+  var blob=new Blob([text],{type:'text/calendar;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},400);
+}
+function projectEvents(p){
+  var days=daysForProject(p.id);
+  if(days.length){
+    return days.map(function(d){
+      return{uid:p.id+'-'+d.dbId,date:d.date,
+             title:p.client+(d.note?' \u2014 '+d.note:''),
+             desc:(p.subservice||p.service)+(p.desc?'\n'+p.desc:'')+(p.contact?'\n'+p.contact:'')};
+    });
+  }
+  return p.date?[{uid:String(p.id),date:p.date,
+    title:p.client+' \u2014 '+(p.subservice||p.service),
+    desc:(p.desc||'')+(p.contact?'\n'+p.contact:'')}]:[];
+}
+function exportProjectICS(){
+  var p=projects.find(function(x){return x.id===editingProjId;});
+  if(!p){toast('Open a project first.');return;}
+  var ev=projectEvents(p);
+  if(!ev.length){toast('No dates to export.');return;}
+  downloadICS(buildICS(ev,'MB Production \u2014 '+p.client),
+    'mbpro-'+String(p.client).replace(/\W+/g,'-').toLowerCase()+'.ics');
+  toast('Calendar file ready');
+}
+function exportMonthICS(){
+  var mo=document.getElementById('cal-month-sel').value;
+  var ev=[];
+  projects.forEach(function(p){
+    projectEvents(p).forEach(function(e){ if(e.date&&e.date.startsWith(mo))ev.push(e); });
+  });
+  if(!ev.length){toast('Nothing scheduled this month.');return;}
+  downloadICS(buildICS(ev,'MB Production \u2014 '+monthLabel(+mo.split('-')[0],+mo.split('-')[1]-1)),
+    'mbpro-'+mo+'.ics');
+  toast('Calendar file ready');
+}
+
 /* ── EDIT PROJECT ── */
 var editingProjId=null;
 function openEditProj(id){
@@ -1745,6 +1859,9 @@ function openEditProj(id){
   document.getElementById('e-date').value=p.date||'';
   document.getElementById('e-status').value=p.status||'Quote';
   document.getElementById('e-desc').value=p.desc||'';
+  document.getElementById('e-day-date').value=p.date||today();
+  document.getElementById('e-day-note').value='';
+  renderDayList();
   document.getElementById('edit-modal').classList.add('open');
 }
 function closeEditProj(){
@@ -1800,7 +1917,7 @@ function saveEditProj(){
       }
       closeEditProj();
       refreshAllDropdowns();populateInvoiceSel();
-      renderLedger();renderIncome();renderProfit();renderCal();
+      renderLedger();renderIncome();renderCal();
       syncStatus('ok');toast('Project updated');
     })
     .catch(function(e){console.error(e);syncStatus('err');toast('Update failed');});
@@ -1816,9 +1933,29 @@ function delProj(id){
 }
 
 /* ══════════ INVOICES ══════════ */
-var invoices=[],invLines=[];
+var invoices=[],invLines=[],currentInvoiceId=null;
 var DEFAULT_TERMS="Upon agreeing with the terms of this quotation a 25% in advance payment and the remaining 75% amount should be paid after the submission of service.\n\nThe content will be delivered within 5 days.\n\nThe client has two revision adjustments after reviewing the final work. Any revision requests will be charged by the amount of work required.";
 
+function invoicePaidStatus(inv){
+  if(inv.paidOverride==='paid')return{key:'complete',label:'Paid',rem:0};
+  if(inv.paidOverride==='unpaid')return{key:'unpaid',label:'Unpaid',rem:inv.total};
+  if(!inv.projectId)return null;                       // not linked, cannot tell
+  var paid=projectPaid(inv.projectId);
+  var total=inv.total||0;
+  if(total<=0)return null;
+  if(paid>=total-0.001)return{key:'complete',label:'Paid',rem:0};
+  if(paid<=0)return{key:'unpaid',label:'Unpaid',rem:total};
+  return{key:'partial',label:'Partial',rem:total-paid};
+}
+function toggleInvoicePaid(dbId){
+  var inv=invoices.find(function(x){return x.dbId==dbId;});
+  if(!inv)return;
+  var next=inv.paidOverride==='paid'?null:'paid';      // force paid, or back to automatic
+  inv.paidOverride=next;
+  sb('PATCH','invoices',{paid_override:next},'id=eq.'+dbId)
+    .then(function(){renderInvoiceHistory();toast(next?'Marked paid':'Back to automatic');})
+    .catch(function(e){console.error(e);inv.paidOverride=next?null:'paid';renderInvoiceHistory();toast('Could not update');});
+}
 function nextInvoiceNo(){
   var max=invoices.reduce(function(a,i){return Math.max(a,parseInt(i.invoiceNo,10)||0);},0);
   return max+1;
@@ -1892,7 +2029,40 @@ function renderInvLines(){
   }).join('');
 }
 
+function syncQuoteToInvoice(){
+  var projId=parseInt(document.getElementById('inv-proj').value,10);
+  var proj=projects.find(function(x){return x.id===projId;});
+  if(!proj){toast('Pick a project first.');return;}
+  var t=invTotals();
+  if(t.total<=0){toast('Nothing to sync.');return;}
+  if(Math.abs((proj.quote||0)-t.total)<0.001){toast('Quote already matches.');return;}
+  if(!confirm('Change '+proj.client+'\'s quote from BHD '+fmt(proj.quote||0)
+      +' to BHD '+fmt(t.total)+'?\n\nThis is what Ledger and Income use for remaining balances.'))return;
+  syncStatus('loading');
+  sb('PATCH','projects',{quote:Math.round(t.total*1000)/1000},'id=eq.'+proj.id)
+    .then(function(){
+      proj.quote=Math.round(t.total*1000)/1000;
+      refreshAllStatuses();populateIncomeSel();renderLedger();renderIncome();
+      syncStatus('ok');toast('Quote updated to BHD '+fmt(proj.quote));
+    })
+    .catch(function(e){console.error(e);syncStatus('err');toast('Update failed');});
+}
+function newInvoice(){
+  currentInvoiceId=null;
+  invLines=[];
+  document.getElementById('inv-proj').value='';
+  document.getElementById('inv-client').value='';
+  document.getElementById('inv-no').value=nextInvoiceNo();
+  document.getElementById('inv-date').value=today();
+  document.getElementById('inv-disc-qty').value=0;
+  document.getElementById('inv-disc-rate').value=0;
+  document.getElementById('inv-terms').value=DEFAULT_TERMS;
+  var st=document.getElementById('inv-paid-stamp'); if(st)st.checked=false;
+  populateInvoiceSel();renderInvLines();renderInvoicePreview();
+  toast('New invoice started');
+}
 function onInvoiceProjectChange(){
+  currentInvoiceId=null;   // changing the project always means a new invoice
   var id=parseInt(document.getElementById('inv-proj').value,10);
   var p=projects.find(function(x){return x.id===id;});
   if(!p){invLines=[];renderInvLines();renderInvoicePreview();return;}
@@ -1955,7 +2125,9 @@ function invoiceDocHTML(){
       +'<td class="money">'+invMoney(t.discount)+' BD</td></tr>'
     :'';
 
-  return'<div class="inv-page"><div class="inv-doc">'
+  var stampEl=document.getElementById('inv-paid-stamp');
+  var stamp=(stampEl&&stampEl.checked)?'<div class="inv-paid-stamp">PAID</div>':'';
+  return'<div class="inv-page">'+stamp+'<div class="inv-doc">'
     +'<div class="inv-doc-head">'
     +'<div class="inv-head-left">'
     +'<div class="inv-brand">Muhammed Bucheeri<br>Production</div>'
@@ -2089,16 +2261,35 @@ function saveInvoice(){
     terms:document.getElementById('inv-terms').value||''
   };
   syncStatus('loading');
+
+  if(currentInvoiceId){
+    // This invoice came from history. Update it rather than creating a second
+    // row with the same number.
+    sb('PATCH','invoices',row,'id=eq.'+currentInvoiceId)
+      .then(function(){
+        var inv=invoices.find(function(x){return x.dbId==currentInvoiceId;});
+        if(inv){
+          inv.invoiceNo=no;inv.projectId=projId;inv.client=row.client;
+          inv.clientLabel=row.client_label;inv.date=row.date;inv.lineItems=row.line_items;
+          inv.discountQty=t.dq;inv.discountRate=t.dr;inv.subtotal=row.subtotal;
+          inv.discount=row.discount;inv.total=row.total;inv.terms=row.terms;
+        }
+        renderInvoiceHistory();renderInvoicePreview();
+        syncStatus('ok');toast('Invoice '+padInv(no)+' updated');
+      })
+      .catch(function(e){console.error(e);syncStatus('err');toast('Update failed \u2014 '+e.message);});
+    return;
+  }
+
   sb('POST','invoices',row,'')
     .then(function(rows){
       var r=rows&&rows[0];
+      currentInvoiceId=r?r.id:null;
       invoices.push({dbId:r?r.id:null,invoiceNo:no,projectId:projId,client:row.client,
         clientLabel:row.client_label,date:row.date,lineItems:row.line_items,
         discountQty:t.dq,discountRate:t.dr,subtotal:row.subtotal,discount:row.discount,
-        total:row.total,terms:row.terms});
-      renderInvoiceHistory();
-      document.getElementById('inv-no').value=nextInvoiceNo();
-      renderInvoicePreview();
+        total:row.total,terms:row.terms,paidOverride:null});
+      renderInvoiceHistory();renderInvoicePreview();
       syncStatus('ok');toast('Invoice '+padInv(no)+' saved');
     })
     .catch(function(e){console.error(e);syncStatus('err');toast('Save failed \u2014 '+e.message);});
@@ -2112,19 +2303,28 @@ function renderInvoiceHistory(){
   if(!list.length){
     c.innerHTML='<p style="font-size:12px;color:var(--text3)">No invoices saved yet.</p>';return;
   }
-  c.innerHTML='<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Client</th><th>Date</th><th>Total (BHD)</th><th>Actions</th></tr></thead><tbody>'
+  c.innerHTML='<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Client</th><th>Date</th><th>Total (BHD)</th><th>Payment</th><th>Actions</th></tr></thead><tbody>'
     +list.map(function(i){
+      var st=invoicePaidStatus(i);
+      var stCell=st
+        ?'<span class="pay-pill pay-'+st.key+'"><span class="pay-dot"></span>'+st.label+'</span>'
+          +(st.rem>0.001?'<div class="td-muted">'+fmt(st.rem)+' left</div>':'')
+          +(i.paidOverride?'<div class="td-muted">manual</div>':'')
+        :'<span style="color:var(--text3)">\u2014</span>';
       return'<tr><td style="font-weight:700">'+padInv(i.invoiceNo)+'</td>'
         +'<td>'+esc(i.clientLabel||i.client)+'</td>'
         +'<td>'+fmtDate(i.date)+'</td>'
         +'<td style="font-weight:700;color:var(--accent)">'+fmt(i.total)+'</td>'
+        +'<td>'+stCell+'</td>'
         +'<td><div class="row-actions"><button class="btn btn-edit" onclick="loadInvoice('+i.dbId+')">Open</button>'
+        +'<button class="btn btn-price" onclick="toggleInvoicePaid('+i.dbId+')">'+(i.paidOverride==='paid'?'Auto':'Paid')+'</button>'
         +'<button class="btn btn-danger" onclick="delInvoice('+i.dbId+')">&#10005;</button></div></td></tr>';
     }).join('')+'</tbody></table></div>';
 }
 function loadInvoice(dbId){
   var i=invoices.find(function(x){return x.dbId==dbId;});
   if(!i)return;
+  currentInvoiceId=i.dbId;
   document.getElementById('inv-no').value=i.invoiceNo;
   document.getElementById('inv-date').value=i.date;
   document.getElementById('inv-client').value=i.clientLabel||i.client;
@@ -2161,8 +2361,10 @@ function renderIncome(){
       var paid=proj?projectPaid(proj.id):0;
       var rem=proj&&proj.quote?Math.max(0,proj.quote-paid):null;
       var ps=proj?payStatus(paid,proj.quote):null;
+      var plabel=proj?((proj.subservice||proj.service)+(proj.desc?' \u00b7 '+proj.desc:'')):'';
       return'<tr>'
-        +'<td style="font-weight:700;color:#fff">'+esc(pay.client)+'</td>'
+        +'<td><div style="font-weight:700;color:#fff">'+esc(pay.client)+'</div>'
+        +(plabel?'<div class="desc-note">'+esc(plabel)+'</div>':'')+'</td>'
         +'<td>'+esc(pay.mile)+'</td><td>'+fmtDate(pay.date)+'</td>'
         +'<td style="font-weight:700;color:var(--accent)">'+fmt(pay.amount)+'</td>'
         +'<td style="color:var(--text3)">'+(rem!==null?fmt(rem)+' left':'—')+'</td>'
@@ -2225,125 +2427,10 @@ function delPay(dbId){
 }
 
 /* ── FIXED EXPENSES ── */
-function renderFixedExpenses(){
-  var c=document.getElementById('fixed-exp-list');
-  if(!fixedExpenses.length){
-    c.innerHTML='<p style="font-size:12px;color:var(--text3);margin-bottom:.5rem">No fixed expenses set yet.</p>';return;
-  }
-  c.innerHTML='<div class="tbl-wrap" style="margin-bottom:.75rem"><table>'
-    +'<thead><tr><th>Name</th><th>Monthly (BHD)</th><th></th></tr></thead><tbody>'
-    +fixedExpenses.map(function(e){
-      return'<tr><td style="font-weight:600">'+esc(e.name)+'</td>'
-        +'<td style="color:var(--red)">'+fmt(e.amount)+'</td>'
-        +'<td><button class="btn btn-danger" onclick="delFixedExp('+e.dbId+')">&#10005;</button></td></tr>';
-    }).join('')+'</tbody></table></div>';
-}
-function addFixedExp(){
-  var name=document.getElementById('fe-name').value.trim();
-  var amount=parseFloat(document.getElementById('fe-amt').value)||0;
-  if(!name){toast('Enter expense name.');return;}
-  if(amount<=0){toast('Enter a valid amount.');return;}
-  syncStatus('loading');
-  sb('POST','fixed_expenses',{name:name,amount:amount},'')
-    .then(function(rows){
-      var row=rows&&rows[0];
-      fixedExpenses.push({dbId:row?row.id:null,name:name,amount:amount});
-      document.getElementById('fe-name').value='';
-      document.getElementById('fe-amt').value='';
-      renderFixedExpenses();renderProfit();syncStatus('ok');toast('Fixed expense added');
-    }).catch(function(e){console.error(e);syncStatus('err');toast('Error \u2014 '+e.message);});
-}
-function delFixedExp(dbId){
-  if(!confirm('Remove this fixed expense?'))return;
-  syncStatus('loading');
-  sb('DELETE','fixed_expenses','','id=eq.'+dbId)
-    .then(function(){
-      fixedExpenses=fixedExpenses.filter(function(e){return e.dbId!==dbId;});
-      renderFixedExpenses();renderProfit();syncStatus('ok');toast('Removed');
-    }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
-}
 
 /* ── LOGGED EXPENSES ── */
-function renderLoggedExpenses(mo){
-  var f=loggedExpenses.filter(function(e){return e.date&&e.date.startsWith(mo);});
-  var b=document.getElementById('logged-exp-body');
-  if(!f.length){b.innerHTML='<tr><td colspan="5"><div class="empty-state"><div class="empty-text">No expenses logged this month</div></div></td></tr>';return;}
-  b.innerHTML=f.map(function(e){
-    return'<tr>'
-      +'<td style="font-weight:600">'+esc(e.description)+'</td>'
-      +'<td><span class="badge b-pending">'+esc(e.category)+'</span></td>'
-      +'<td>'+fmtDate(e.date)+'</td>'
-      +'<td style="color:var(--red);font-weight:700">'+fmt(e.amount)+'</td>'
-      +'<td><button class="btn btn-danger" onclick="delLoggedExp('+e.dbId+')">&#10005;</button></td></tr>';
-  }).join('');
-}
-function addLoggedExp(){
-  var desc=document.getElementById('le-desc').value.trim();
-  var cat=document.getElementById('le-cat').value;
-  var amount=parseFloat(document.getElementById('le-amt').value)||0;
-  var date=document.getElementById('le-date').value||today();
-  if(!desc){toast('Enter a description.');return;}
-  if(amount<=0){toast('Enter a valid amount.');return;}
-  syncStatus('loading');
-  sb('POST','logged_expenses',{description:desc,category:cat,amount:amount,date:date},'')
-    .then(function(rows){
-      var row=rows&&rows[0];
-      loggedExpenses.push({dbId:row?row.id:null,description:desc,category:cat,amount:amount,date:date});
-      document.getElementById('le-desc').value='';
-      document.getElementById('le-amt').value='';
-      document.getElementById('le-date').value=today();
-      renderProfit();syncStatus('ok');toast('Expense logged');
-    }).catch(function(e){console.error(e);syncStatus('err');toast('Error \u2014 '+e.message);});
-}
-function delLoggedExp(dbId){
-  if(!confirm('Remove this expense?'))return;
-  syncStatus('loading');
-  sb('DELETE','logged_expenses','','id=eq.'+dbId)
-    .then(function(){
-      loggedExpenses=loggedExpenses.filter(function(e){return e.dbId!==dbId;});
-      renderProfit();syncStatus('ok');toast('Removed');
-    }).catch(function(e){console.error(e);syncStatus('err');toast('Delete failed');});
-}
 
 /* ── PROFIT ── */
-function renderProfit(){
-  var mo=document.getElementById('profit-month-sel').value;
-  var eligible=projects.filter(function(p){return p.status==='Complete'&&finalPaymentMonth(p.id)===mo;});
-  var totalReceived=payments.filter(function(p){return p.type==='Received'&&p.date&&p.date.startsWith(mo);}).reduce(function(a,p){return a+(p.amount||0);},0);
-  var fixedTotal=fixedExpenses.reduce(function(a,e){return a+(e.amount||0);},0);
-  var loggedTotal=loggedExpenses.filter(function(e){return e.date&&e.date.startsWith(mo);}).reduce(function(a,e){return a+(e.amount||0);},0);
-  var totalExp=fixedTotal+loggedTotal;
-  var remaining=totalReceived-totalExp;
-  document.getElementById('profit-stats').innerHTML=
-    '<div class="metric"><div class="metric-label">Income received</div><div class="metric-value v-teal">BHD '+fmt(totalReceived)+'</div></div>'
-    +'<div class="metric"><div class="metric-label">Fixed expenses</div><div class="metric-value v-red">BHD '+fmt(fixedTotal)+'</div></div>'
-    +'<div class="metric"><div class="metric-label">Logged expenses</div><div class="metric-value v-red">BHD '+fmt(loggedTotal)+'</div></div>'
-    +'<div class="metric"><div class="metric-label">Total expenses</div><div class="metric-value v-red">BHD '+fmt(totalExp)+'</div></div>'
-    +'<div class="metric"><div class="metric-label">Remaining</div><div class="metric-value '+(remaining>=0?'v-teal':'v-red')+'">BHD '+fmt(remaining)+'</div></div>';
-  var b=document.getElementById('profit-body');
-  if(!eligible.length){
-    b.innerHTML='<tr><td colspan="9"><div class="empty-state"><div class="empty-text">No completed projects with final payment this month</div></div></td></tr>';
-  } else {
-    b.innerHTML=eligible.map(function(p){
-      var gc=Object.keys(p.gSel||{}).reduce(function(a,k){return a+(p.gSel[k].cost||0);},0);
-      var ec=(p.editHours||0)*(p.editRate||5);
-      var oc=(p.outsource||[]).reduce(function(a,l){return a+(l.cost||0);},0);
-      var tc=gc+ec+oc,margin=(p.quote||0)-tc,pct=p.quote>0?(margin/p.quote*100):0;
-      var col=margin>=0?'var(--accent)':'var(--red)';
-      return'<tr>'
-        +'<td style="font-weight:700;color:#fff">'+esc(p.client)+'</td>'
-        +'<td style="color:var(--text2)">'+(esc(p.subservice)||esc(p.service))+'</td>'
-        +'<td>'+fmt(p.quote)+(p.discount&&p.discount>0?'<div class="td-muted" style="color:#7aa3e8">-'+fmt(p.discount)+' disc.</div>':'')+'</td>'
-        +'<td style="color:var(--text3)">'+fmt(gc)+'</td>'
-        +'<td style="color:var(--text3)">'+fmt(ec)+'</td><td style="color:var(--text3)">'+fmt(oc)+'</td>'
-        +'<td>'+fmt(tc)+'</td>'
-        +'<td style="color:'+col+';font-weight:700">'+fmt(margin)+'</td>'
-        +'<td style="color:'+col+';font-weight:700">'+pct.toFixed(1)+'%</td></tr>';
-    }).join('');
-  }
-  renderFixedExpenses();
-  renderLoggedExpenses(mo);
-}
 
 /* ── CALENDAR ── */
 function renderCal(){
@@ -2373,11 +2460,24 @@ function renderCal(){
       if(ds===ts)cell.classList.add('today');
     }
     var num=document.createElement('div');num.className='cal-num';num.textContent=dn;cell.appendChild(num);
-    projects.filter(function(p){return p.date===ds;}).forEach(function(p){
-      var evt=document.createElement('span');
-      evt.className='cal-evt '+(p.status==='Quote'?'quote':p.status==='Complete'?'complete':'active');
-      evt.textContent=p.client;evt.title=p.client+' \u2014 '+(p.subservice||p.service);
-      cell.appendChild(evt);
+    // A project with shoot days shows on those days instead of its single date.
+    projects.forEach(function(p){
+      var days=daysForProject(p.id);
+      var cls=(p.status==='Quote'?'quote':p.status==='Complete'?'complete':'active');
+      if(days.length){
+        days.filter(function(d){return d.date===ds;}).forEach(function(d){
+          var evt=document.createElement('span');
+          evt.className='cal-evt '+cls;
+          evt.textContent=(d.note?d.note+' \u00b7 ':'')+p.client;
+          evt.title=p.client+' \u2014 '+(d.note||p.subservice||p.service);
+          cell.appendChild(evt);
+        });
+      } else if(p.date===ds){
+        var evt=document.createElement('span');
+        evt.className='cal-evt '+cls;
+        evt.textContent=p.client;evt.title=p.client+' \u2014 '+(p.subservice||p.service);
+        cell.appendChild(evt);
+      }
     });
     grid.appendChild(cell);
   }
@@ -2392,11 +2492,10 @@ function startAutoRefresh(){
       sb('GET','projects','','order=created_at.asc'),
       sb('GET','payments','','order=created_at.asc'),
       sb('GET','clients','','order=name.asc'),
-      sb('GET','fixed_expenses','','order=created_at.asc'),
-      sb('GET','logged_expenses','','order=created_at.asc'),
       sb('GET','custom_gear','','order=created_at.asc'),
       sb('GET','fixed_packages','','order=created_at.asc'),
-      sb('GET','invoices','','order=invoice_no.asc')
+      sb('GET','invoices','','order=invoice_no.asc'),
+      sb('GET','project_days','','order=date.asc')
     ]).then(function(res){
       projects=(res[0]||[]).map(function(p){
         return{id:p.id,client:p.client||'',contact:p.contact||'',
@@ -2416,11 +2515,10 @@ function startAutoRefresh(){
         return{dbId:p.id,client:p.client||'',mile:p.mile||'',amount:parseFloat(p.amount)||0,date:p.date||'',type:p.type||'Received',projectId:p.project_id||null};
       });
       clients=(res[2]||[]).map(function(c){return{name:c.name||'',contact:c.contact||'',isRoyalty:!!c.is_royalty};});
-      fixedExpenses=(res[3]||[]).map(function(e){return{dbId:e.id,name:e.name||'',amount:parseFloat(e.amount)||0};});
-      loggedExpenses=(res[4]||[]).map(function(e){return{dbId:e.id,description:e.description||'',category:e.category||'',amount:parseFloat(e.amount)||0,date:e.date||''};});
-      customGear=(res[5]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
-      fixedPackages=(res[6]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
-      invoices=(res[7]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||''};});
+      customGear=(res[3]||[]).map(function(g){return{dbId:g.id,name:g.name||'',cat:g.cat||'Other',cost:parseFloat(g.cost)||0};});
+      fixedPackages=(res[4]||[]).map(function(pk){return{dbId:pk.id,name:pk.name||'',price:parseFloat(pk.price)||0,isRecurring:!!pk.is_recurring,priceMin:pk.price_min!=null?parseFloat(pk.price_min):null,priceMax:pk.price_max!=null?parseFloat(pk.price_max):null};});
+      projectDays=(res[6]||[]).map(function(d){return{dbId:d.id,projectId:d.project_id,date:d.date||'',note:d.note||''};});
+      invoices=(res[5]||[]).map(function(i){return{dbId:i.id,invoiceNo:i.invoice_no,projectId:i.project_id,client:i.client||'',clientLabel:i.client_label||'',date:i.date||'',lineItems:i.line_items||[],discountQty:parseFloat(i.discount_qty)||0,discountRate:parseFloat(i.discount_rate)||0,subtotal:parseFloat(i.subtotal)||0,discount:parseFloat(i.discount)||0,total:parseFloat(i.total)||0,terms:i.terms||'',paidOverride:i.paid_override||null};});
       refreshAllStatuses();refreshClientList();refreshAllDropdowns();
       renderCustomGearList();buildCustomGearChips();
       if(document.getElementById('fp-package'))renderFixedPackageOptions();
@@ -2442,14 +2540,12 @@ renderOutsourceLines();
 renderCustomGearList();
 renderRoyaltyClientList();
 renderInvLines();
-renderFixedExpenses();
 document.getElementById('inv-date').value=today();
 document.getElementById('inv-terms').value=DEFAULT_TERMS;
 var im=curMo();
-['ledger-month-sel','income-month-sel','profit-month-sel','cal-month-sel'].forEach(function(id){buildMonthOptions(id,im);});
+['ledger-month-sel','income-month-sel','cal-month-sel'].forEach(function(id){buildMonthOptions(id,im);});
 document.getElementById('i-date').value=today();
 document.getElementById('n-date').value=today();
-document.getElementById('le-date').value=today();
 document.getElementById('hdr-date').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
 loadAll().then(function(){startAutoRefresh();});
 </script>
