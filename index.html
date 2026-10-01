@@ -339,7 +339,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v7</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v8</span></div>
   </div>
 </div>
 
@@ -588,6 +588,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 
   <div class="btn-row" style="margin-top:1rem">
     <button class="btn btn-primary" onclick="printInvoice()">Save / share as PDF</button>
+    <button class="btn" onclick="downloadInvoiceHTML()">Download invoice file</button>
     <button class="btn" onclick="saveInvoice()">Save invoice</button>
     <button class="btn" onclick="newInvoice()">New invoice</button>
     <button class="btn" onclick="syncQuoteToInvoice()">Update project quote</button>
@@ -2263,11 +2264,62 @@ function scaleInvPreview(){
 }
 window.addEventListener('resize',function(){scaleInvPreview();});
 
+/* iOS does not support window.print() inside an installed PWA. It works in
+   Safari, so in standalone mode we hand the finished page to Safari instead of
+   silently doing nothing. */
+function isStandalonePWA(){
+  return (window.navigator.standalone===true) ||
+         (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+}
+
+function invoiceStandaloneHTML(){
+  var css='';
+  var sheets=document.querySelectorAll('style');
+  for(var i=0;i<sheets.length;i++)css+=sheets[i].textContent;
+  var base=location.href.replace(/[^\/]*$/,'');   // so logo, signature and fonts still resolve
+  return '<!DOCTYPE html><html><head><meta charset="utf-8">'
+    +'<base href="'+base+'">'
+    +'<meta name="viewport" content="width=device-width,initial-scale=1">'
+    +'<title>Invoice '+padInv(document.getElementById('inv-no').value)+'</title>'
+    +'<style>'+css+'</style>'
+    +'<style>body{background:#fff;padding:0;margin:0}#print-area{display:block !important}'
+    +'.hint-bar{font:13px -apple-system,system-ui,sans-serif;background:#1D9E75;color:#fff;'
+    +'padding:10px 14px;text-align:center}@media print{.hint-bar{display:none !important}}</style>'
+    +'</head><body>'
+    +'<div class="hint-bar">Tap the Share button, then Print, then pinch out to save as PDF.</div>'
+    +'<div id="print-area">'+invoiceDocHTML()+'</div>'
+    +'<script>'
+    +'function fitInvoiceToPage(root){'
+    +'if(!root)return;var page=root.querySelector(".inv-page"),doc=root.querySelector(".inv-doc");'
+    +'if(!page||!doc)return;doc.style.transform="";doc.style.width="";'
+    +'var last=doc.querySelector(".inv-terms");if(!last)return;'
+    +'var t=doc.getBoundingClientRect().top;'
+    +'var pad=parseFloat(getComputedStyle(doc).paddingBottom)||0;'
+    +'var needed=(last.getBoundingClientRect().bottom-t)+pad;var avail=page.clientHeight;'
+    +'var safe=avail*0.98;if(needed>safe){var k=safe/needed;if(k<0.6)k=0.6;'
+    +'doc.style.transform="scale("+k+")";doc.style.width=(100/k)+"%";}}'
+    +'window.addEventListener("load",function(){'
+    +'setTimeout(function(){fitInvoiceToPage(document.getElementById("print-area"));'
+    +'try{window.print();}catch(e){}},700);});'
+    +'<\/script></body></html>';
+}
+
 function printInvoice(){
   if(!invLines.length){toast('Add at least one line item.');return;}
+
+  if(isStandalonePWA()){
+    // Must open inside the click handler or iOS blocks it.
+    var w=window.open('','_blank');
+    if(!w){toast('Allow pop-ups, or open the app in Safari to share.');return;}
+    var blob=new Blob([invoiceStandaloneHTML()],{type:'text/html'});
+    w.location.href=URL.createObjectURL(blob);
+    toast('Opened in Safari \u2014 use Share, then Print');
+    return;
+  }
+
   var pa=document.getElementById('print-area');
   pa.innerHTML=invoiceDocHTML();
-  pa.style.display='block';           // must be laid out to measure
+  pa.style.display='block';
   pa.style.position='absolute';
   pa.style.left='-10000px';
   fitInvoiceToPage(pa);
@@ -2275,6 +2327,19 @@ function printInvoice(){
     pa.style.position='';pa.style.left='';pa.style.display='';
     window.print();
   },120);
+}
+
+/* Always works, even where printing is blocked: saves the invoice as a file
+   you can open and print from anywhere. */
+function downloadInvoiceHTML(){
+  if(!invLines.length){toast('Add at least one line item.');return;}
+  var blob=new Blob([invoiceStandaloneHTML()],{type:'text/html'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='invoice-'+padInv(document.getElementById('inv-no').value)+'.html';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},400);
+  toast('Invoice file saved');
 }
 
 function resetInvTerms(){
