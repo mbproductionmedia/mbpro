@@ -285,6 +285,15 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .cal-legend{display:flex;gap:12px;margin-bottom:1rem;flex-wrap:wrap}
 .cal-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text3)}
 .cal-legend-swatch{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.cal-day{transition:border-color .12s,background .12s;-webkit-tap-highlight-color:transparent}
+.cal-day.has-events:hover{background:var(--bg3)}
+.cal-day.sel{border-color:var(--accent);border-width:1.5px;background:var(--accent-lo)}
+.cal-item{border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);padding:.8rem .9rem;margin-bottom:8px}
+.cal-item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.cal-item-client{font-size:14px;font-weight:700;color:#fff;line-height:1.3}
+.cal-item-meta{font-size:11.5px;color:var(--text3);margin-top:3px;line-height:1.5}
+.cal-item-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border)}
+.cal-item-money{font-size:13px;font-weight:700;color:var(--accent)}
 .toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 
@@ -330,7 +339,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v6</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v7</span></div>
   </div>
 </div>
 
@@ -616,7 +625,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 
 <!-- CALENDAR -->
 <div id="tab-calendar" class="panel">
-  <div class="month-nav"><label>Month</label><select id="cal-month-sel" onchange="renderCal()"></select>
+  <div class="month-nav"><label>Month</label><select id="cal-month-sel" onchange="selectedCalDay=null;renderCal()"></select>
     <button class="btn" onclick="exportMonthICS()" style="white-space:nowrap">Add month to calendar</button></div>
   <div class="cal-legend">
     <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--accent-bg);border:1px solid #1a4535"></div>Active</div>
@@ -624,6 +633,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
     <div class="cal-legend-item"><div class="cal-legend-swatch" style="background:var(--bg3);border:1px solid var(--border)"></div>Complete</div>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
+  <div id="cal-detail"></div>
 </div>
 
 </div>
@@ -1100,7 +1110,11 @@ function go(t){
     if(!document.getElementById('inv-terms').value)document.getElementById('inv-terms').value=DEFAULT_TERMS;
     if(!document.getElementById('inv-date').value)document.getElementById('inv-date').value=today();
     renderInvLines();renderInvoiceHistory();renderInvoicePreview();}
-  if(t==='calendar')renderCal();
+  if(t==='calendar'){
+    // open today by default so the space below is useful straight away
+    if(!selectedCalDay&&document.getElementById('cal-month-sel').value===curMo())selectedCalDay=today();
+    renderCal();
+  }
 }
 
 /* ── GEAR PANELS ── */
@@ -2458,6 +2472,80 @@ function delPay(dbId){
 /* ── PROFIT ── */
 
 /* ── CALENDAR ── */
+var selectedCalDay=null;
+
+/* Everything happening on one date: shoot days if the project has them,
+   otherwise the project's own date. Used by both the grid and the detail panel. */
+function entriesForDate(ds){
+  var out=[];
+  projects.forEach(function(p){
+    var days=daysForProject(p.id);
+    if(days.length){
+      days.forEach(function(d){ if(d.date===ds)out.push({p:p,note:d.note||'',dayId:d.dbId}); });
+    } else if(p.date===ds){
+      out.push({p:p,note:'',dayId:null});
+    }
+  });
+  return out;
+}
+
+function selectCalDay(ds){
+  selectedCalDay=(selectedCalDay===ds)?null:ds;   // tapping the same day closes it
+  renderCal();
+}
+
+function exportDayICS(){
+  if(!selectedCalDay)return;
+  var ev=[];
+  entriesForDate(selectedCalDay).forEach(function(e){
+    ev.push({uid:e.p.id+'-'+(e.dayId||'d'),date:selectedCalDay,
+      title:e.p.client+(e.note?' \u2014 '+e.note:''),
+      desc:(e.p.subservice||e.p.service)+(e.p.desc?'\n'+e.p.desc:'')+(e.p.contact?'\n'+e.p.contact:'')});
+  });
+  if(!ev.length){toast('Nothing on this day.');return;}
+  downloadICS(buildICS(ev,'MB Production \u2014 '+fmtDate(selectedCalDay)),'mbpro-'+selectedCalDay+'.ics');
+  toast('Calendar file ready');
+}
+
+function renderCalDetail(){
+  var c=document.getElementById('cal-detail');
+  if(!c)return;
+  if(!selectedCalDay){
+    c.innerHTML='<p class="hint" style="text-align:center;margin-top:1rem">Tap a day to see what is on.</p>';
+    return;
+  }
+  var list=entriesForDate(selectedCalDay);
+  var head='<div class="card"><div class="card-title" style="display:flex;justify-content:space-between;align-items:center;gap:10px">'
+    +'<span>'+new Date(selectedCalDay+'T00:00:00').toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+'</span>'
+    +'<button class="btn" onclick="selectCalDay(\''+selectedCalDay+'\')" style="padding:4px 10px;font-size:11px">Close</button></div>';
+  if(!list.length){
+    c.innerHTML=head+'<p class="hint" style="margin:0">Nothing scheduled. Add shoot days from a project\'s Edit screen.</p></div>';
+    return;
+  }
+  c.innerHTML=head+list.map(function(e){
+    var p=e.p;
+    var paid=projectPaid(p.id);
+    var rem=Math.max(0,(p.quote||0)-paid);
+    var ps=payStatus(paid,p.quote);
+    return'<div class="cal-item">'
+      +'<div class="cal-item-top">'
+      +'<div style="min-width:0"><div class="cal-item-client">'+esc(p.client)+'</div>'
+      +'<div class="cal-item-meta">'+(esc(p.subservice)||esc(p.service))+(e.note?' \u00b7 <strong style="color:var(--accent)">'+esc(e.note)+'</strong>':'')+'</div>'
+      +(p.desc?'<div class="cal-item-meta" style="font-style:italic">'+esc(p.desc)+'</div>':'')
+      +(p.contact?'<div class="cal-item-meta">'+esc(p.contact)+'</div>':'')+'</div>'
+      +'<span class="badge '+(p.status==='Quote'?'b-quote':p.status==='Active'?'b-active':'b-complete')+'">'+p.status+'</span>'
+      +'</div>'
+      +'<div class="cal-item-bottom">'
+      +'<span class="cal-item-money">BHD '+(p.quote?fmt(p.quote):'0.000')+'</span>'
+      +payPill(ps)+(rem>0.001?'<span class="td-muted">'+fmt(rem)+' left</span>':'')
+      +'<span style="flex:1"></span>'
+      +'<button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
+      +'<button class="btn btn-price" onclick="priceProject('+p.id+')">Price</button>'
+      +'</div></div>';
+  }).join('')
+  +'<div class="btn-row" style="margin-top:.75rem"><button class="btn" onclick="exportDayICS()">Add this day to phone calendar</button></div></div>';
+}
+
 function renderCal(){
   var mo=document.getElementById('cal-month-sel').value;
   var parts=mo.split('-');var y=parseInt(parts[0],10),m=parseInt(parts[1],10)-1;
@@ -2486,26 +2574,24 @@ function renderCal(){
     }
     var num=document.createElement('div');num.className='cal-num';num.textContent=dn;cell.appendChild(num);
     // A project with shoot days shows on those days instead of its single date.
-    projects.forEach(function(p){
-      var days=daysForProject(p.id);
-      var cls=(p.status==='Quote'?'quote':p.status==='Complete'?'complete':'active');
-      if(days.length){
-        days.filter(function(d){return d.date===ds;}).forEach(function(d){
-          var evt=document.createElement('span');
-          evt.className='cal-evt '+cls;
-          evt.textContent=(d.note?d.note+' \u00b7 ':'')+p.client;
-          evt.title=p.client+' \u2014 '+(d.note||p.subservice||p.service);
-          cell.appendChild(evt);
-        });
-      } else if(p.date===ds){
-        var evt=document.createElement('span');
-        evt.className='cal-evt '+cls;
-        evt.textContent=p.client;evt.title=p.client+' \u2014 '+(p.subservice||p.service);
-        cell.appendChild(evt);
-      }
+    var entries=entriesForDate(ds);
+    entries.forEach(function(e){
+      var p=e.p;
+      var evt=document.createElement('span');
+      evt.className='cal-evt '+(p.status==='Quote'?'quote':p.status==='Complete'?'complete':'active');
+      evt.textContent=(e.note?e.note+' \u00b7 ':'')+p.client;
+      evt.title=p.client+' \u2014 '+(e.note||p.subservice||p.service);
+      cell.appendChild(evt);
     });
+    if(entries.length)cell.classList.add('has-events');
+    if(ds===selectedCalDay)cell.classList.add('sel');
+    (function(dstr){
+      cell.style.cursor='pointer';
+      cell.addEventListener('click',function(){selectCalDay(dstr);});
+    })(ds);
     grid.appendChild(cell);
   }
+  renderCalDetail();
 }
 
 /* ── AUTO REFRESH ── */
