@@ -113,6 +113,8 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .btn-edit{color:var(--accent);border-color:transparent;padding:4px 10px;font-size:11px;background:none}
 .btn-price{color:#d4af4a;border-color:transparent;padding:4px 10px;font-size:11px;background:none}
 .btn-price:hover{background:#2a2312}
+.btn-start{color:var(--accent);border-color:var(--accent);padding:4px 10px;font-size:11px;background:none}
+.btn-start:hover{background:var(--accent-lo)}
 .day-row{display:flex;align-items:center;gap:10px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);margin-bottom:6px}
 .day-date{font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap}
 .day-note{font-size:12px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
@@ -328,7 +330,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v5</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v6</span></div>
   </div>
 </div>
 
@@ -1677,6 +1679,7 @@ function renderLedger(){
       +'<td>'+payPill(ps)+'</td>'
       +'<td><div class="row-actions"><button class="btn btn-edit" onclick="openEditProj('+p.id+')">Edit</button>'
       +'<button class="btn btn-price" onclick="priceProject('+p.id+')">Price</button>'
+      +(p.status==='Quote'?'<button class="btn btn-start" onclick="startWork('+p.id+')">Start</button>':'')
       +'<button class="btn btn-danger" onclick="delProj('+p.id+')">&#10005;</button></div></td></tr>';
   });
   // Carried-over rows appended after current month rows
@@ -1720,6 +1723,25 @@ function renderLedger(){
     +'<div class="metric"><div class="metric-label">Received (BHD)</div><div class="metric-value">'+fmt(rcvd)+'</div></div>'
     +(coOutstanding>0?'<div class="metric"><div class="metric-label">Carried Over</div><div class="metric-value" style="color:#7aa3e8">'+fmt(coOutstanding)+'</div><div class="metric-sub">from prev. months</div></div>':'');
 }
+/* Mark a project as started without waiting for the advance payment.
+   The automatic status logic in refreshProjectStatus() leaves a manually
+   set Active alone, so this sticks until a payment completes it. */
+function startWork(id){
+  var p=projects.find(function(x){return x.id===id;});
+  if(!p){toast('Project not found.');return;}
+  if(p.status!=='Quote'){toast('Already started.');return;}
+  p.status='Active';
+  syncStatus('loading');
+  sb('PATCH','projects',{status:'Active'},'id=eq.'+id)
+    .then(function(){
+      populateInvoiceSel();populateIncomeSel();
+      renderLedger();renderCal();
+      syncStatus('ok');toast(p.client+' marked active');
+    })
+    .catch(function(e){console.error(e);p.status='Quote';renderLedger();
+      syncStatus('err');toast('Could not update status');});
+}
+
 /* Jump from a Ledger row straight to that project's pricing screen. */
 function priceProject(id){
   var p=projects.find(function(x){return x.id===id;});
@@ -1975,18 +1997,20 @@ function populateInvoiceSel(keepId){
   var sel=document.getElementById('inv-proj');
   if(!sel)return;
   var cur=keepId!=null?String(keepId):sel.value;
-  // Only projects still at Quote stage, newest first. A project opened from a
-  // saved invoice stays listed even if it has since moved on, so it isn't lost.
+  // Anything not yet settled: quotes, plus work already started (including jobs
+  // begun without an advance payment). Fully paid projects drop out. A project
+  // opened from a saved invoice stays listed even if it has since moved on.
   var list=projects.filter(function(p){
-    return p.status==='Quote'||(cur&&String(p.id)===cur);
+    if(cur&&String(p.id)===cur)return true;
+    return p.status==='Quote'||p.status==='Active';
   }).sort(function(a,b){return (b.date||'').localeCompare(a.date||'');});
-  sel.innerHTML='<option value="">'+(list.length?'\u2014 select a quote \u2014':'\u2014 no open quotes \u2014')+'</option>';
+  sel.innerHTML='<option value="">'+(list.length?'\u2014 select a project \u2014':'\u2014 no open projects \u2014')+'</option>';
   list.forEach(function(p){
     var o=document.createElement('option');
     o.value=p.id;
     var line=p.client+' \u2014 '+(p.subservice||p.service)+' ('+fmtDate(p.date)+')';
     if(p.desc)line+=' \u00b7 '+(p.desc.length>28?p.desc.slice(0,28)+'\u2026':p.desc);
-    if(p.status!=='Quote')line+=' ['+p.status+']';
+    if(p.status==='Complete')line+=' [paid in full]';   // only flagged when reopened from a saved invoice
     o.textContent=line;
     sel.appendChild(o);
   });
