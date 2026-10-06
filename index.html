@@ -294,6 +294,8 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
 .cal-item-meta{font-size:11.5px;color:var(--text3);margin-top:3px;line-height:1.5}
 .cal-item-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:.7rem;padding-top:.7rem;border-top:1px solid var(--border)}
 .cal-item-money{font-size:13px;font-weight:700;color:var(--accent)}
+.year-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.year-row select{width:auto;min-width:110px;font-size:14px}
 .toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:10px 20px;border-radius:var(--radius-lg);font-size:13px;font-weight:500;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center}
 .toast.show{opacity:1}
 
@@ -339,7 +341,7 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
   </div>
   <div class="header-right">
     <div class="app-date" id="hdr-date"></div>
-    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v8</span></div>
+    <div class="sync-status"><span class="sync-dot loading" id="sync-dot"></span><span id="sync-label">Connecting...</span><span style="color:var(--text3);opacity:.7">&middot; v9</span></div>
   </div>
 </div>
 
@@ -540,6 +542,15 @@ textarea{resize:vertical;min-height:68px;line-height:1.5;-webkit-appearance:none
     <thead><tr><th>Client</th><th>Service</th><th>Date</th><th>Quote (BHD)</th><th>Project</th><th>Payment</th><th>Actions</th></tr></thead>
     <tbody id="ledger-body"></tbody>
   </table></div>
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">Year report</div>
+    <div class="year-row">
+      <label style="margin:0">Year</label>
+      <select id="ledger-year-sel"></select>
+      <button class="btn btn-primary" onclick="exportYearReport()">Export to Excel</button>
+    </div>
+    <p class="hint">Downloads an .xlsx with three sheets: Summary by month, every payment received, and what you are still owed.</p>
+  </div>
 </div>
 
 <!-- INVOICE -->
@@ -1091,7 +1102,7 @@ function loadAll(){
     renderCustomGearList();buildCustomGearChips();
     if(document.getElementById('fp-package'))renderFixedPackageOptions();
     renderRoyaltyClientList();
-    populateInvoiceSel();renderInvoiceHistory();
+    populateInvoiceSel();renderInvoiceHistory();buildYearOptions();
     renderAll();
     syncStatus('ok');
   }).catch(function(e){console.error('Load:',e);syncStatus('err');toast('Connection error');});
@@ -1881,6 +1892,235 @@ function exportMonthICS(){
   downloadICS(buildICS(ev,'MB Production \u2014 '+monthLabel(+mo.split('-')[0],+mo.split('-')[1]-1)),
     'mbpro-'+mo+'.ics');
   toast('Calendar file ready');
+}
+
+/* ══════════ YEAR REPORT (.xlsx) ══════════
+   An .xlsx file is a zip of XML parts. Writing it directly keeps the app
+   dependency-free and working offline, which a CDN library would not. */
+
+function crc32(bytes){
+  var t=crc32.table;
+  if(!t){
+    t=crc32.table=new Int32Array(256);
+    for(var n=0;n<256;n++){var cc=n;
+      for(var k=0;k<8;k++)cc=cc&1?(0xEDB88320^(cc>>>1)):(cc>>>1);
+      t[n]=cc;}
+  }
+  var c=-1;
+  for(var i=0;i<bytes.length;i++)c=(c>>>8)^t[(c^bytes[i])&0xFF];
+  return (c^-1)>>>0;
+}
+function strBytes(str){
+  var out=[],i,cp;
+  for(i=0;i<str.length;i++){
+    cp=str.charCodeAt(i);
+    if(cp<0x80)out.push(cp);
+    else if(cp<0x800){out.push(0xC0|cp>>6,0x80|cp&63);}
+    else {out.push(0xE0|cp>>12,0x80|(cp>>6)&63,0x80|cp&63);}
+  }
+  return new Uint8Array(out);
+}
+/* Minimal zip writer, stored (uncompressed) entries only. */
+function makeZip(files){
+  var chunks=[],central=[],offset=0;
+  files.forEach(function(f){
+    var data=strBytes(f.content), name=strBytes(f.name), crc=crc32(data);
+    var lf=new Uint8Array(30+name.length), dv=new DataView(lf.buffer);
+    dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true);
+    dv.setUint16(8,0,true); dv.setUint16(10,0,true); dv.setUint16(12,0,true);
+    dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+    dv.setUint16(26,name.length,true); dv.setUint16(28,0,true);
+    lf.set(name,30);
+    chunks.push(lf,data);
+    var cd=new Uint8Array(46+name.length), cv=new DataView(cd.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true);
+    cv.setUint16(8,0,true); cv.setUint16(10,0,true); cv.setUint16(12,0,true); cv.setUint16(14,0,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,data.length,true); cv.setUint32(24,data.length,true);
+    cv.setUint16(28,name.length,true); cv.setUint16(30,0,true); cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true); cv.setUint16(36,0,true); cv.setUint32(38,0,true);
+    cv.setUint32(42,offset,true);
+    cd.set(name,46);
+    central.push(cd);
+    offset+=lf.length+data.length;
+  });
+  var cdSize=central.reduce(function(a,c){return a+c.length;},0);
+  var end=new Uint8Array(22), ev=new DataView(end.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true);
+  ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cdSize,true); ev.setUint32(16,offset,true); ev.setUint16(20,0,true);
+  return new Blob(chunks.concat(central,[end]),{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+
+function xmlEsc(t){
+  return String(t==null?'':t).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+function colName(n){            // 0 -> A, 26 -> AA
+  var s='';
+  do{ s=String.fromCharCode(65+(n%26))+s; n=Math.floor(n/26)-1; }while(n>=0);
+  return s;
+}
+/* rows: array of arrays. Cells are {v:number} , {t:'s',v:text} or plain values.
+   style 1 = bold header, style 2 = 3dp number, style 3 = bold 3dp number. */
+function sheetXML(rows){
+  var out='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  rows.forEach(function(row,r){
+    out+='<row r="'+(r+1)+'">';
+    row.forEach(function(cell,c){
+      if(cell==null||cell==='')return;
+      var ref=colName(c)+(r+1);
+      var st=(cell&&cell.s)?' s="'+cell.s+'"':'';
+      var val=(cell&&cell.v!==undefined)?cell.v:cell;
+      var isNum=(cell&&cell.n)||typeof val==='number';
+      if(isNum)out+='<c r="'+ref+'"'+st+'><v>'+val+'</v></c>';
+      else out+='<c r="'+ref+'"'+st+' t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(val)+'</t></is></c>';
+    });
+    out+='</row>';
+  });
+  return out+'</sheetData></worksheet>';
+}
+
+function buildWorkbook(sheets){
+  var files=[];
+  files.push({name:'[Content_Types].xml',content:
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'
+    +'<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'
+    +'<Default Extension="xml" ContentType="application/xml"/>'
+    +'<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'
+    +sheets.map(function(s,i){return'<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join('')
+    +'<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'
+    +'</Types>'});
+  files.push({name:'_rels/.rels',content:
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +'<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'
+    +'</Relationships>'});
+  files.push({name:'xl/workbook.xml',content:
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+    +'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'
+    +sheets.map(function(s,i){return'<sheet name="'+xmlEsc(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';}).join('')
+    +'</sheets></workbook>'});
+  files.push({name:'xl/_rels/workbook.xml.rels',content:
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'
+    +sheets.map(function(s,i){return'<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';}).join('')
+    +'<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'
+    +'</Relationships>'});
+  files.push({name:'xl/styles.xml',content:
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+    +'<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+    +'<numFmts count="1"><numFmt numFmtId="164" formatCode="0.000"/></numFmts>'
+    +'<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font>'
+    +'<font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'
+    +'<fills count="2"><fill><patternFill patternType="none"/></fill>'
+    +'<fill><patternFill patternType="gray125"/></fill></fills>'
+    +'<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'
+    +'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'
+    +'<cellXfs count="4">'
+    +'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+    +'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+    +'<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>'
+    +'<xf numFmtId="164" fontId="1" fillId="0" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1"/>'
+    +'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'
+    +'</styleSheet>'});
+  sheets.forEach(function(s,i){
+    files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',content:sheetXML(s.rows)});
+  });
+  return makeZip(files);
+}
+
+/* The date a project's work was supplied: last shoot day, else the project date. */
+function supplyDate(p){
+  var days=daysForProject(p.id);
+  if(days.length)return days[days.length-1].date;
+  return p.date||'';
+}
+function projectLabel(p){
+  return (p.subservice||p.service||'')+(p.desc?' \u00b7 '+p.desc:'');
+}
+function r3(n){return Math.round((parseFloat(n)||0)*1000)/1000;}
+
+function exportYearReport(){
+  var yr=document.getElementById('ledger-year-sel').value;
+  if(!yr){toast('Pick a year first.');return;}
+  var H=function(t){return{v:t,s:1};};
+  var N=function(n){return{v:r3(n),n:true,s:2};};
+  var NB=function(n){return{v:r3(n),n:true,s:3};};
+
+  // ----- Payments sheet -----
+  var pay=payments.filter(function(x){return x.type==='Received'&&x.date&&x.date.slice(0,4)===yr;})
+                  .sort(function(a,b){return a.date.localeCompare(b.date);});
+  var payRows=[[H('Date'),H('Client'),H('Project'),H('Milestone'),H('Amount (BHD)')]];
+  pay.forEach(function(x){
+    var proj=x.projectId?projects.find(function(q){return q.id===x.projectId;}):null;
+    payRows.push([fmtDate(x.date),x.client,proj?projectLabel(proj):'',x.mile||'',N(x.amount)]);
+  });
+  var payTotal=pay.reduce(function(a,x){return a+(x.amount||0);},0);
+  payRows.push([]);
+  payRows.push([{v:'TOTAL RECEIVED',s:1},'','','',NB(payTotal)]);
+
+  // ----- Summary sheet -----
+  var months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var sumRows=[[{v:'MB Production \u2014 Year report '+yr,s:1}],[],
+    [H('Month'),H('Received (BHD)'),H('Payments'),H('Work supplied (BHD)')]];
+  var tRec=0,tSup=0,tCnt=0;
+  for(var m=0;m<12;m++){
+    var key=yr+'-'+String(m+1).padStart(2,'0');
+    var rec=payments.filter(function(x){return x.type==='Received'&&x.date&&x.date.startsWith(key);});
+    var recSum=rec.reduce(function(a,x){return a+(x.amount||0);},0);
+    var sup=projects.filter(function(p){
+      return p.status!=='Quote'&&supplyDate(p).startsWith(key);
+    }).reduce(function(a,p){return a+(p.quote||0);},0);
+    tRec+=recSum;tSup+=sup;tCnt+=rec.length;
+    sumRows.push([months[m],N(recSum),{v:rec.length,n:true},N(sup)]);
+  }
+  sumRows.push([{v:'TOTAL',s:1},NB(tRec),{v:tCnt,n:true,s:1},NB(tSup)]);
+  sumRows.push([]);
+  sumRows.push(['Received = money actually collected, dated by payment. This is your income for the year.']);
+  sumRows.push(['Work supplied = value of work delivered, dated by last shoot day (or project date). Not income.']);
+  sumRows.push(['Quotes not yet started are excluded from both columns.']);
+
+  // ----- Outstanding sheet -----
+  var outRows=[[H('Client'),H('Project'),H('Date'),H('Quote (BHD)'),H('Paid (BHD)'),H('Outstanding (BHD)'),H('Status')]];
+  var owed=0;
+  projects.filter(function(p){
+    if(p.status==='Quote'||!(p.quote>0))return false;
+    return projectPaid(p.id)<p.quote-0.001;
+  }).sort(function(a,b){return (a.date||'').localeCompare(b.date||'');})
+   .forEach(function(p){
+    var paid=projectPaid(p.id), rem=Math.max(0,p.quote-paid);
+    owed+=rem;
+    outRows.push([p.client,projectLabel(p),fmtDate(p.date),N(p.quote),N(paid),N(rem),p.status]);
+  });
+  outRows.push([]);
+  outRows.push([{v:'TOTAL OUTSTANDING',s:1},'','','','',NB(owed),'']);
+
+  var blob=buildWorkbook([
+    {name:'Summary',rows:sumRows},
+    {name:'Payments',rows:payRows},
+    {name:'Outstanding',rows:outRows}
+  ]);
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url;a.download='MB-Production-'+yr+'.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},500);
+  toast('Year report '+yr+' downloaded');
+}
+
+function buildYearOptions(){
+  var sel=document.getElementById('ledger-year-sel');
+  if(!sel)return;
+  var yrs={};
+  projects.forEach(function(p){if(p.date)yrs[p.date.slice(0,4)]=1;});
+  payments.forEach(function(x){if(x.date)yrs[x.date.slice(0,4)]=1;});
+  yrs[String(CUR_YEAR)]=1;
+  var list=Object.keys(yrs).sort().reverse();
+  sel.innerHTML=list.map(function(y){return'<option value="'+y+'">'+y+'</option>';}).join('');
+  sel.value=String(CUR_YEAR);
 }
 
 /* ── EDIT PROJECT ── */
@@ -2699,7 +2939,7 @@ function startAutoRefresh(){
       renderCustomGearList();buildCustomGearChips();
       if(document.getElementById('fp-package'))renderFixedPackageOptions();
       renderRoyaltyClientList();
-      populateInvoiceSel();renderInvoiceHistory();
+      populateInvoiceSel();renderInvoiceHistory();buildYearOptions();
       renderAll();
       syncStatus('ok');
     }).catch(function(){syncStatus('err');});
